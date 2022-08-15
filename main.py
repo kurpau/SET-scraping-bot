@@ -76,7 +76,7 @@ class Main:
     def EPSValid(self, eps_list):
         curr_eps = eps_list[0]
         prev_eps = eps_list[1]
-        limit = 0.05
+        limit = 0.02
         if curr_eps > 0 and prev_eps > 0 and (curr_eps - prev_eps >= limit):
             return True
         return False
