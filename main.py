@@ -58,9 +58,11 @@ class Main:
             EPS = []
             # Get a text line in report where EPS numbers are present
             line = re.search('EPS \(baht\) (.*)Type', data).group(1)
+            print(line)
             # Clean up text line from non EPS strings
-            r = re.compile(r'(\(?\d[\d.]*\)?)')
+            r = re.compile(r'(\(?\d[\d.,]*\)?)')
             for eps in re.findall(r, line):
+                eps = eps.replace(",", "") # fixes error when decimal comma is used in the report
                 # Check if number should be negative
                 if '(' in eps:
                     # Append string to EPS list and convert it to a negative float
@@ -99,6 +101,7 @@ class Main:
         links = self.get_links()
         for link in links:
             data = self.getReportText(link['link'])
+            print(link)
             eps = self.getEPS(data)[:2]
             if self.EPSValid(eps):
                 name = self.getName(data)
