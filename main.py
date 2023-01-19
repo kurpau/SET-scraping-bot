@@ -57,8 +57,7 @@ class Main:
             # List to store EPS values
             EPS = []
             # Get a text line in report where EPS numbers are present
-            line = re.search('EPS \(baht\) (.*)Type', data).group(1)
-            print(line)
+            line = re.search('EPS \(baht\) (.*)Remark', data).group(1) # "Remark" instead of "Type" for (Unoudited) report supporrt
             # Clean up text line from non EPS strings
             r = re.compile(r'(\(?\d[\d.,]*\)?)')
             for eps in re.findall(r, line):
@@ -101,7 +100,6 @@ class Main:
         links = self.get_links()
         for link in links:
             data = self.getReportText(link['link'])
-            print(link)
             eps = self.getEPS(data)[:2]
             if self.EPSValid(eps):
                 name = self.getName(data)
