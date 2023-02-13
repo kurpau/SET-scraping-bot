@@ -7,33 +7,16 @@ class Main:
     def __init__(self):
         pass
 
-    def get_links(self):
-        # List for storing links
-        links = []
-        link_prefix = "https://classic.set.or.th/"
-        URL = "https://classic.set.or.th/set/searchtodaynews.do?newsGroupId=3&language=en&country=US"
-        # Get page HTML content
-        html_doc = requests.get(URL).content
-        soup = BeautifulSoup(html_doc, 'html.parser')
-        # Find second table on the page
-        second_table = soup.findAll('table')[1]
-        # Find table body
-        table_body = second_table.find('tbody')
-        # Find table rows
-        rows = table_body.find_all('tr')
-        # Loop through rows
-        for row in rows:
-            cols = row.find_all('td')
-            # Check if it's the correct financial report
-            if "(F45)" in cols[-2].text:
-                # Get relative link to report page
-                rel_link = cols[-1].find('a').attrs['href']
-                # Get ticker
-                ticker = cols[-4].text
-                # Add link prefix to relative link and append to link list
-                links.append({'link': str(link_prefix + rel_link), 'ticker': ticker})
-        
-        return links
+    def get_data(self):
+        try: 
+            api_url = "https://www.set.or.th/api/set/news/search?keyword=F45&lang=en"
+            r = requests.get(api_url)
+        except requests.exceptions.HTTPError as err:
+            raise SystemExit(err)
+
+        data = r.json()["newsInfoList"]
+
+        return data
 
     def getReportText(self, link):
         # Get page HTML content
@@ -82,7 +65,7 @@ class Main:
             return True
         return False
     
-    def WriteToFile(self, name, ticker, eps_list):
+    def WriteToFile(self, name, ticker, eps_list, url):
         with open('result.txt', 'a') as f:
             f.write(f'{name} [ {ticker} ] \n')
             f.write('|' + '-' * 21 + '|\n')
@@ -90,22 +73,24 @@ class Main:
             f.write('|' + '-' * 21 + '|\n')
             f.write("| {:>8} | {:>8} | \n".format(eps_list[0], eps_list[1]))
             f.write('|' + '-' * 21 + '|\n')
+            f.write("Link to F45 page: " + url + '\n')
             f.write("\n")
+
 
     def Start(self):
         try:
             os.remove("result.txt")
         except OSError:
             pass
-        links = self.get_links()
-        for link in links:
-            data = self.getReportText(link['link'])
+
+        for stock in self.get_data():
+            data = self.getReportText(stock['url'])
             eps = self.getEPS(data)[:2]
             if self.EPSValid(eps):
                 name = self.getName(data)
-                ticker = link['ticker']
-                link = link['link']
-                self.WriteToFile(name, ticker, eps)
+                symbol = stock['symbol']
+                url = stock['url']
+                self.WriteToFile(name, symbol, eps, url)
 
 if __name__ == "__main__":
     main = Main()
