@@ -1,7 +1,5 @@
-import requests
+import requests, re, os
 from bs4 import BeautifulSoup
-import re
-import os
 
 class Main:
     def __init__(self):
@@ -17,9 +15,12 @@ class Main:
             raise SystemExit(err)
         
         data = r.json()["newsInfoList"]
-        print("Processing data...")
+        if data:
+            print("Processing data...")
+            return data
+        else:
+            raise SystemExit("Server returned no data")
 
-        return data
 
     def getReportText(self, link):
         # Get page HTML content
