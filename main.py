@@ -11,10 +11,13 @@ class Main:
         try: 
             api_url = "https://www.set.or.th/api/set/news/search?keyword=F45&lang=en"
             r = requests.get(api_url)
+            print("Fetching data...")
         except requests.exceptions.HTTPError as err:
+            print("SET server ERROR: \n")
             raise SystemExit(err)
-
+        
         data = r.json()["newsInfoList"]
+        print("Processing data...")
 
         return data
 
@@ -91,6 +94,7 @@ class Main:
                 symbol = stock['symbol']
                 url = stock['url']
                 self.WriteToFile(name, symbol, eps, url)
+        print("Process finished")
 
 if __name__ == "__main__":
     main = Main()
