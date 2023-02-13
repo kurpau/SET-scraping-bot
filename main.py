@@ -35,7 +35,7 @@ class Main:
     def getName(self, data):
         try:
             name = re.search('\(F45\)(.*)\(In', data).group(1)
-            return name
+            return name.strip()
         except AttributeError:
             print("RE pattern not found")
 
