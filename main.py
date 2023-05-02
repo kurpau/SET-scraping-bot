@@ -1,4 +1,4 @@
-import requests, re, os
+import requests, re, os, json
 from bs4 import BeautifulSoup
 
 class Main:
@@ -6,20 +6,27 @@ class Main:
         pass
 
     def get_data(self):
-        try: 
+        try:
             api_url = "https://www.set.or.th/api/set/news/search?keyword=F45&lang=en"
             r = requests.get(api_url)
             print("Fetching data...")
-        except requests.exceptions.HTTPError as err:
-            print("SET server ERROR: \n")
-            raise SystemExit(err)
+            r.raise_for_status() # Raise an HTTPError if one occurred
+        except requests.exceptions.RequestException as e:
+            print("Error:", e)
+            raise SystemExit(e)
         
-        data = r.json()["newsInfoList"]
-        if data:
+        try:
+            data = r.json()["newsInfoList"]
             print("Processing data...")
             return data
-        else:
-            raise SystemExit("Server returned no data")
+        except json.decoder.JSONDecodeError as e:
+            print("Error decoding JSON response:", e)
+            print("Response content:", r.content)
+            raise SystemExit(e)
+        except KeyError as e:
+            print("Error accessing JSON response data:", e)
+            print("Response content:", r.content)
+            raise SystemExit(e)
 
 
     def getReportText(self, link):
