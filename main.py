@@ -1,4 +1,4 @@
-import requests, re, os, urllib.parse, logging
+import requests, re, os, urllib.parse, logging, sys
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -7,17 +7,17 @@ from requests.exceptions import RequestException
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logging.getLogger('selenium').setLevel(logging.WARNING)
 
-class NoSeleniumFilter(logging.Filter):
-    def filter(self, record):
-        return "selenium" not in record.pathname
-
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logging.getLogger().addFilter(NoSeleniumFilter())
-
 class Main:
     def __init__(self, url):
         self.url = url
         self.limit = 0.02
+
+        if getattr(sys, 'frozen', False):
+            application_path = os.path.dirname(sys.executable)
+            os.chdir(application_path)
+        
+        self.output_dir = os.getcwd()
+
 
     def get_data(self):
         logging.info("Starting the Selenium WebDriver...")
@@ -115,7 +115,8 @@ class Main:
         return False
     
     def WriteToFile(self, name, ticker, eps_list, url):
-        with open('result.txt', 'a') as f:
+        file_path = os.path.join(self.output_dir, 'result.txt')
+        with open(file_path, 'a') as f:
             f.write(f'{name} [ {ticker} ] \n')
             f.write(f'|{"-" * 21}|\n')
             f.write(f"| {'Current':<8} | {'Previous':<8} | \n")
@@ -146,7 +147,7 @@ class Main:
                 url = stock['url']
                 logging.info(f"Stock {stock['symbol']} meets the criteria. Writing to file...")
                 self.WriteToFile(name, symbol, eps, url)
-        logging.info("Process finished")
+        logging.info("Process finished. Check the \"result.txt\" file.")
 
 if __name__ == "__main__":
     url = "https://www.set.or.th/en/market/news-and-alert/news?source=company&securityType=S&type=3&keyword=F45"
