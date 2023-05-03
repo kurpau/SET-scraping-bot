@@ -2,9 +2,9 @@ import requests, re, os, json, pprint, urllib.parse, logging
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from requests.exceptions import RequestException
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 class Main:
     def __init__(self, url):
@@ -35,6 +35,8 @@ class Main:
             symbol_element = container.find('div', {'class': 'symbol-quote'})
             symbol = symbol_element.text.strip()
 
+            actual_url += f"&symbol={symbol}"
+
             results.append({'url': actual_url, 'symbol': symbol})
 
         driver.quit()
@@ -42,38 +44,57 @@ class Main:
         return results
 
     def getReportText(self, link):
-        # Get page HTML content
-        html_doc = requests.get(link).content
-        soup = BeautifulSoup(html_doc, 'html.parser')
-        # Get report in text format
-        s = soup.pre.text
-        # Remove whitespace and breaks from text
-        s = ' '.join(s.split())
-        return s
+        try:
+            # Get page HTML content
+            html_doc = requests.get(link).content
+        except RequestException as e:
+            logging.error(f"Failed to fetch HTML content from {link}")
+            logging.debug(f"Exception details: {e}")
+            return None
+
+        try:
+            soup = BeautifulSoup(html_doc, 'html.parser')
+            # Get report in text format
+            s = soup.pre.text
+            # Remove whitespace and breaks from text
+            s = ' '.join(s.split())
+            return s
+        except AttributeError as e:
+            logging.error(f"Failed to extract report text from {link}")
+            logging.debug(f"Exception details: {e}")
+            return None
 
     def getName(self, data):
         try:
             name = re.search('\(F45\)(.*)\(In', data).group(1)
             return name.strip()
-        except AttributeError:
-            print("RE pattern not found")
+        except AttributeError as e:
+            logging.debug("Failed to extract EPS values: RE pattern not found")
+            logging.debug(f"Exception details: {e}")
+            return None
 
     def getEPS(self, data):
         try:
-            EPS = []
+            # Find the line containing EPS values
             line = re.search('EPS \(baht\) (.*)Remark', data).group(1)
 
-            r = re.compile(r'(\(?\d[\d.,]*\)?)')
-            for eps in re.findall(r, line):
-                eps = eps.replace(",", "")
-                if '(' in eps:
-                    EPS.append(-float(eps.translate(str.maketrans('','','()'))))
+            # Regular expression for matching EPS values (with named groups)
+            eps_pattern = r'\(?(?P<value>\d[\d.,]*)(?P<negative>\)?)'
+            eps_matches = re.finditer(eps_pattern, line)
+
+            # Extract and clean EPS values
+            EPS = []
+            for match in eps_matches:
+                eps = match.group('value').replace(",", "")
+                if match.group('negative'):
+                    EPS.append(-float(eps))
                 else:
                     EPS.append(float(eps))
+
             return EPS
 
         except AttributeError as e:
-            logging.error("Failed to extract EPS values: RE pattern not found")
+            logging.debug("Failed to extract EPS values: RE pattern not found")
             logging.debug(f"Exception details: {e}")
             return None
 
@@ -95,7 +116,6 @@ class Main:
             f.write("Link to F45 page: " + url + '\n')
             f.write("\n")
 
-
     def Start(self):
         try:
             os.remove("result.txt")
@@ -103,7 +123,6 @@ class Main:
             pass
 
         for stock in self.get_data():
-            print(stock['url'])
             data = self.getReportText(stock['url'])
             eps = self.getEPS(data)
     
@@ -120,15 +139,7 @@ class Main:
                 self.WriteToFile(name, symbol, eps, url)
         logging.info("Process finished")
 
-def print_instructions():
-    print("Usage: SET-scraper")
-    print("This script will extract relevant data and write the results to 'result.txt'.")
-    print("Run the script and wait for the 'Process finished' message to appear.")
-    print("After completion, check 'result.txt' for output.")
-
-
 if __name__ == "__main__":
     url = "https://www.set.or.th/en/market/news-and-alert/news?source=company&securityType=S&type=3&keyword=F45"
-    print_instructions()
     main = Main(url)
     main.Start()
