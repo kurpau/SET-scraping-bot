@@ -1,10 +1,18 @@
-import requests, re, os, json, pprint, urllib.parse, logging
+import requests, re, os, urllib.parse, logging
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from requests.exceptions import RequestException
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.getLogger('selenium').setLevel(logging.WARNING)
+
+class NoSeleniumFilter(logging.Filter):
+    def filter(self, record):
+        return "selenium" not in record.pathname
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.getLogger().addFilter(NoSeleniumFilter())
 
 class Main:
     def __init__(self, url):
@@ -12,6 +20,7 @@ class Main:
         self.limit = 0.02
 
     def get_data(self):
+        logging.info("Starting the Selenium WebDriver...")
         options = Options()
         options.add_argument('--headless=new')
         driver = webdriver.Chrome(options=options)
@@ -40,7 +49,7 @@ class Main:
             results.append({'url': actual_url, 'symbol': symbol})
 
         driver.quit()
-
+        logging.info("Fetched stock data. Processing stocks...")
         return results
 
     def getReportText(self, link):
@@ -108,21 +117,20 @@ class Main:
     def WriteToFile(self, name, ticker, eps_list, url):
         with open('result.txt', 'a') as f:
             f.write(f'{name} [ {ticker} ] \n')
-            f.write('|' + '-' * 21 + '|\n')
-            f.write("| {:<8} | {:<8} | \n".format('Current','Previous'))
-            f.write('|' + '-' * 21 + '|\n')
-            f.write("| {:>8} | {:>8} | \n".format(eps_list[0], eps_list[1]))
-            f.write('|' + '-' * 21 + '|\n')
-            f.write("Link to F45 page: " + url + '\n')
-            f.write("\n")
+            f.write(f'|{"-" * 21}|\n')
+            f.write(f"| {'Current':<8} | {'Previous':<8} | \n")
+            f.write(f'|{"-" * 21}|\n')
+            f.write(f"| {eps_list[0]:>8} | {eps_list[1]:>8} | \n")
+            f.write(f'|{"-" * 21}|\n')
+            f.write(f"Link to F45 page: {url}\n\n")
 
     def Start(self):
-        try:
+        logging.info("Starting script...")
+        if os.path.exists("result.txt"):
             os.remove("result.txt")
-        except OSError:
-            pass
 
         for stock in self.get_data():
+            logging.info(f"Processing stock {stock['symbol']}...")
             data = self.getReportText(stock['url'])
             eps = self.getEPS(data)
     
@@ -136,6 +144,7 @@ class Main:
                 name = self.getName(data)
                 symbol = stock['symbol']
                 url = stock['url']
+                logging.info(f"Stock {stock['symbol']} meets the criteria. Writing to file...")
                 self.WriteToFile(name, symbol, eps, url)
         logging.info("Process finished")
 
