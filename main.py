@@ -153,3 +153,5 @@ if __name__ == "__main__":
     url = "https://www.set.or.th/en/market/news-and-alert/news?source=company&securityType=S&type=3&keyword=F45"
     main = Main(url)
     main.Start()
+    input("Press Enter to close the script...")
+
