@@ -1,7 +1,9 @@
-import requests, re, os, json, pprint, urllib.parse
+import requests, re, os, json, pprint, urllib.parse, logging
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class Main:
@@ -37,7 +39,6 @@ class Main:
 
         driver.quit()
 
-        pprint.pprint(results)
         return results
 
     def getReportText(self, link):
@@ -59,30 +60,26 @@ class Main:
 
     def getEPS(self, data):
         try:
-            # List to store EPS values
             EPS = []
-            # Get a text line in report where EPS numbers are present
-            line = re.search('EPS \(baht\) (.*)Remark', data).group(1) # "Remark" instead of "Type" for (Unoudited) report supporrt
-            # Clean up text line from non EPS strings
+            line = re.search('EPS \(baht\) (.*)Remark', data).group(1)
+
             r = re.compile(r'(\(?\d[\d.,]*\)?)')
             for eps in re.findall(r, line):
-                eps = eps.replace(",", "") # fixes error when decimal comma is used in the report
-                # Check if number should be negative
+                eps = eps.replace(",", "")
                 if '(' in eps:
-                    # Append string to EPS list and convert it to a negative float
                     EPS.append(-float(eps.translate(str.maketrans('','','()'))))
                 else:
-                    # Append string to EPS list and convert it to float
                     EPS.append(float(eps))
             return EPS
-        # Handle regex errors
-        except AttributeError:
-            print("RE pattern not found")
+
+        except AttributeError as e:
+            logging.error("Failed to extract EPS values: RE pattern not found")
+            logging.debug(f"Exception details: {e}")
+            return None
 
     def EPSValid(self, eps_list):
         curr_eps = eps_list[0]
         prev_eps = eps_list[1]
-        limit = 0.02
         if curr_eps > 0 and prev_eps > 0 and (curr_eps - prev_eps >= self.limit):
             return True
         return False
@@ -106,16 +103,32 @@ class Main:
             pass
 
         for stock in self.get_data():
+            print(stock['url'])
             data = self.getReportText(stock['url'])
-            eps = self.getEPS(data)[:2]
+            eps = self.getEPS(data)
+    
+            if eps is None:
+                logging.warning(f"EPS extraction failed for stock with url: {stock['url']}")
+                continue
+                
+            eps = eps[:2]
+
             if self.EPSValid(eps):
                 name = self.getName(data)
                 symbol = stock['symbol']
                 url = stock['url']
                 self.WriteToFile(name, symbol, eps, url)
-        print("Process finished")
+        logging.info("Process finished")
+
+def print_instructions():
+    print("Usage: SET-scraper")
+    print("This script will extract relevant data and write the results to 'result.txt'.")
+    print("Run the script and wait for the 'Process finished' message to appear.")
+    print("After completion, check 'result.txt' for output.")
+
 
 if __name__ == "__main__":
     url = "https://www.set.or.th/en/market/news-and-alert/news?source=company&securityType=S&type=3&keyword=F45"
+    print_instructions()
     main = Main(url)
     main.Start()
