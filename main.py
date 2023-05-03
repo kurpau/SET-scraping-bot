@@ -1,33 +1,44 @@
-import requests, re, os, json
+import requests, re, os, json, pprint, urllib.parse
 from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
 
 class Main:
-    def __init__(self):
-        pass
+    def __init__(self, url):
+        self.url = url
+        self.limit = 0.02
 
     def get_data(self):
-        try:
-            api_url = "https://www.set.or.th/api/set/news/search?keyword=F45&lang=en"
-            r = requests.get(api_url)
-            print("Fetching data...")
-            r.raise_for_status() # Raise an HTTPError if one occurred
-        except requests.exceptions.RequestException as e:
-            print("Error:", e)
-            raise SystemExit(e)
-        
-        try:
-            data = r.json()["newsInfoList"]
-            print("Processing data...")
-            return data
-        except json.decoder.JSONDecodeError as e:
-            print("Error decoding JSON response:", e)
-            print("Response content:", r.content)
-            raise SystemExit(e)
-        except KeyError as e:
-            print("Error accessing JSON response data:", e)
-            print("Response content:", r.content)
-            raise SystemExit(e)
+        options = Options()
+        options.add_argument('--headless=new')
+        driver = webdriver.Chrome(options=options)
+        driver.get(self.url)
 
+        html = driver.page_source
+
+        soup = BeautifulSoup(html, 'html.parser')
+        container_elements = soup.find_all('div', {'class': 'card-quote-news-contanier'})
+
+        results = []
+
+        for container in container_elements:
+            url_element = container.find('a', {'class': 'btn-social-facebook'})
+            fb_url = url_element['href']
+
+            parsed_fb_url = urllib.parse.urlparse(fb_url)
+            query_params = urllib.parse.parse_qs(parsed_fb_url.query)
+            actual_url = query_params['u'][0]
+
+            symbol_element = container.find('div', {'class': 'symbol-quote'})
+            symbol = symbol_element.text.strip()
+
+            results.append({'url': actual_url, 'symbol': symbol})
+
+        driver.quit()
+
+        pprint.pprint(results)
+        return results
 
     def getReportText(self, link):
         # Get page HTML content
@@ -72,7 +83,7 @@ class Main:
         curr_eps = eps_list[0]
         prev_eps = eps_list[1]
         limit = 0.02
-        if curr_eps > 0 and prev_eps > 0 and (curr_eps - prev_eps >= limit):
+        if curr_eps > 0 and prev_eps > 0 and (curr_eps - prev_eps >= self.limit):
             return True
         return False
     
@@ -105,5 +116,6 @@ class Main:
         print("Process finished")
 
 if __name__ == "__main__":
-    main = Main()
+    url = "https://www.set.or.th/en/market/news-and-alert/news?source=company&securityType=S&type=3&keyword=F45"
+    main = Main(url)
     main.Start()
