@@ -1,8 +1,10 @@
-import requests, re, os, urllib.parse, logging, sys
+import requests, re, os, urllib.parse, logging, sys, time 
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from requests.exceptions import RequestException
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logging.getLogger('selenium').setLevel(logging.WARNING)
@@ -18,47 +20,60 @@ class Main:
         
         self.output_dir = os.getcwd()
     
+
     def get_data(self):
-        logging.info("Starting the Selenium WebDriver...")
+        logging.info("Starting the Selenium WebDriver and Fetching Data...")
         options = Options()
         options.add_argument('--headless=new')
+        options.add_experimental_option('excludeSwitches', ['enable-logging']) # Disable log: "DevTools listening on..."
         driver = webdriver.Chrome(options=options)
         driver.get(self.url)
 
-        html = driver.page_source
-
-        soup = BeautifulSoup(html, 'html.parser')
-        container_elements = soup.find_all('div', {'class': 'card-quote-news-contanier'})
-
         results = []
 
-        for container in container_elements:
-            url_element = container.find('a', {'class': 'btn-social-facebook'})
-            fb_url = url_element['href']
+        while True:
+            html = driver.page_source
+            soup = BeautifulSoup(html, 'html.parser')
+            container_elements = soup.find_all('div', {'class': 'card-quote-news-contanier'})
 
-            parsed_fb_url = urllib.parse.urlparse(fb_url)
-            query_params = urllib.parse.parse_qs(parsed_fb_url.query)
-            actual_url = query_params['u'][0]
+            for container in container_elements:
+                url_element = container.find('a', {'class': 'btn-social-facebook'})
+                fb_url = url_element['href']
 
-            parent_element = container.find('div', {'class': 'd-flex flex-column align-items-center fs-18px title-font-family securities-filed ps-md-3'})
-            
-            # Handle the exception if parent_element is not found
+                parsed_fb_url = urllib.parse.urlparse(fb_url)
+                query_params = urllib.parse.parse_qs(parsed_fb_url.query)
+                actual_url = query_params['u'][0]
+
+                parent_element = container.find('div', {'class': 'd-flex flex-column align-items-center fs-18px title-font-family securities-filed ps-md-3'})
+                
+                # Handle the exception if parent_element is not found
+                try:
+                    symbol_element = parent_element.find('div', {'class': 'me-auto'})
+                except AttributeError:
+                    logging.error("Parent element not found in container.")
+                    continue
+                
+                # Handle the exception if symbol_element is not found
+                try:
+                    symbol = symbol_element.text.strip()
+                except AttributeError:
+                    logging.error("Symbol element not found in container.")
+                    continue
+
+                actual_url += f"&symbol={symbol}"
+
+                results.append({'url': actual_url, 'symbol': symbol})
+
             try:
-                symbol_element = parent_element.find('div', {'class': 'me-auto'})
-            except AttributeError:
-                logging.error("Parent element not found in container.")
-                continue
-            
-            # Handle the exception if symbol_element is not found
-            try:
-                symbol = symbol_element.text.strip()
-            except AttributeError:
-                logging.error("Symbol element not found in container.")
-                continue
-
-            actual_url += f"&symbol={symbol}"
-
-            results.append({'url': actual_url, 'symbol': symbol})
+                next_button = driver.find_element(By.XPATH, "//li[contains(@class, 'page-item') and contains(@class, 'page-link__next')]//span[contains(@class, 'page-link')]")
+                if "disabled" in next_button.find_element(By.XPATH, "./..").get_attribute("class"):
+                    break
+                else:
+                    next_button.click()
+                    time.sleep(2)  # Add a delay to allow the page to load the new data
+            except NoSuchElementException:
+                logging.error("Next button not found. Ending pagination.")
+                break
 
         driver.quit()
         logging.info("Fetched stock data. Processing stocks...")
@@ -142,15 +157,17 @@ class Main:
         if os.path.exists("result.txt"):
             os.remove("result.txt")
 
+        stocks_meeting_criteria = 0  # Add a counter to keep track of stocks that meet the criteria
+
         for stock in self.get_data():
             logging.info(f"Processing stock {stock['symbol']}...")
             data = self.getReportText(stock['url'])
             eps = self.getEPS(data)
-    
+
             if eps is None:
                 logging.warning(f"EPS extraction failed for stock with url: {stock['url']}")
                 continue
-                
+
             eps = eps[:2]
 
             if self.EPSValid(eps):
@@ -159,7 +176,13 @@ class Main:
                 url = stock['url']
                 logging.info(f"Stock {stock['symbol']} meets the criteria. Writing to file...")
                 self.WriteToFile(name, symbol, eps, url)
-        logging.info("Process finished. Check the \"result.txt\" file.")
+                stocks_meeting_criteria += 1  # Increment the counter if a stock meets the criteria
+
+        if stocks_meeting_criteria == 0:
+            logging.warning("No stocks met the criteria. The output file is empty.")
+        else:
+            logging.info("Process finished. Check the \"result.txt\" file.")
+
 
 if __name__ == "__main__":
     url = "https://www.set.or.th/en/market/news-and-alert/news?source=company&securityType=S&type=3&keyword=F45"
