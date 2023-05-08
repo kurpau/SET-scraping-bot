@@ -26,7 +26,7 @@ class Main:
     def get_data(self):
         logging.info("Starting the Selenium WebDriver and Fetching Data...")
         options = Options()
-        # options.add_argument('--headless=new')
+        options.add_argument('--headless=new')
         options.add_experimental_option('excludeSwitches', ['enable-logging']) # Disable log: "DevTools listening on..."
         driver = webdriver.Chrome(options=options)
         driver.get(self.url)
