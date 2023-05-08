@@ -17,8 +17,7 @@ class Main:
             os.chdir(application_path)
         
         self.output_dir = os.getcwd()
-
-
+    
     def get_data(self):
         logging.info("Starting the Selenium WebDriver...")
         options = Options()
@@ -41,8 +40,21 @@ class Main:
             query_params = urllib.parse.parse_qs(parsed_fb_url.query)
             actual_url = query_params['u'][0]
 
-            symbol_element = container.find('div', {'class': 'symbol-quote'})
-            symbol = symbol_element.text.strip()
+            parent_element = container.find('div', {'class': 'd-flex flex-column align-items-center fs-18px title-font-family securities-filed ps-md-3'})
+            
+            # Handle the exception if parent_element is not found
+            try:
+                symbol_element = parent_element.find('div', {'class': 'me-auto'})
+            except AttributeError:
+                logging.error("Parent element not found in container.")
+                continue
+            
+            # Handle the exception if symbol_element is not found
+            try:
+                symbol = symbol_element.text.strip()
+            except AttributeError:
+                logging.error("Symbol element not found in container.")
+                continue
 
             actual_url += f"&symbol={symbol}"
 
@@ -153,5 +165,4 @@ if __name__ == "__main__":
     url = "https://www.set.or.th/en/market/news-and-alert/news?source=company&securityType=S&type=3&keyword=F45"
     main = Main(url)
     main.Start()
-    input("Press Enter to close the script...")
 
