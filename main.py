@@ -33,53 +33,37 @@ class Main:
 
         results = []
 
-        while True:
-            html = driver.page_source
-            soup = BeautifulSoup(html, 'html.parser')
-            container_elements = soup.find_all('div', {'class': 'card-quote-news-contanier'})
+        html = driver.page_source
+        soup = BeautifulSoup(html, 'html.parser')
+        container_elements = soup.find_all('div', {'class': 'card-quote-news-contanier'})
 
-            for container in container_elements:
-                url_element = container.find('a', {'class': 'btn-social-facebook'})
-                fb_url = url_element['href']
+        for container in container_elements:
+            url_element = container.find('a', {'class': 'btn-social-facebook'})
+            fb_url = url_element['href']
 
-                parsed_fb_url = urllib.parse.urlparse(fb_url)
-                query_params = urllib.parse.parse_qs(parsed_fb_url.query)
-                actual_url = query_params['u'][0]
+            parsed_fb_url = urllib.parse.urlparse(fb_url)
+            query_params = urllib.parse.parse_qs(parsed_fb_url.query)
+            actual_url = query_params['u'][0]
 
-                parent_element = container.find('div', {'class': 'd-flex flex-column align-items-center fs-18px title-font-family securities-filed ps-md-3'})
-                
-                # Handle the exception if parent_element is not found
-                try:
-                    symbol_element = parent_element.find('div', {'class': 'me-auto'})
-                except AttributeError:
-                    logging.error("Parent element not found in container.")
-                    continue
-                
-                # Handle the exception if symbol_element is not found
-                try:
-                    symbol = symbol_element.text.strip()
-                except AttributeError:
-                    logging.error("Symbol element not found in container.")
-                    continue
-
-                actual_url += f"&symbol={symbol}"
-
-                results.append({'url': actual_url, 'symbol': symbol})
-
+            parent_element = container.find('div', {'class': 'd-flex flex-column align-items-center fs-18px title-font-family securities-filed ps-md-3'})
+            
+            # Handle the exception if parent_element is not found
             try:
-                # Wait for the next button to be clickable, with a maximum wait time of 10 seconds
-                wait = WebDriverWait(driver, 10)
-                next_button = wait.until(EC.presence_of_element_located((By.XPATH, "//li[contains(@class, 'page-item') and contains(@class, 'page-link__next')]//*[self::button or self::span][contains(@class, 'page-link')]")))  # Modified XPath expression to look for either <button> or <span> element
-                if "disabled" in next_button.find_element(By.XPATH, "./..").get_attribute("class") or next_button.tag_name == 'span':
-                    break
-                else:
-                    driver.execute_script("arguments[0].scrollIntoView();", next_button)
-                    time.sleep(1)
-                    next_button.click()
-                    time.sleep(2)  # Add a delay to allow the page to load the new data
-            except NoSuchElementException:
-                logging.error("Next button not found. Ending pagination.")
-                break
+                symbol_element = parent_element.find('div', {'class': 'me-auto'})
+            except AttributeError:
+                logging.error("Parent element not found in container.")
+                continue
+            
+            # Handle the exception if symbol_element is not found
+            try:
+                symbol = symbol_element.text.strip()
+            except AttributeError:
+                logging.error("Symbol element not found in container.")
+                continue
+
+            actual_url += f"&symbol={symbol}"
+
+            results.append({'url': actual_url, 'symbol': symbol})
 
         driver.quit()
         logging.info("Fetched stock data. Processing stocks...")
