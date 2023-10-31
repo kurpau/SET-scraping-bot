@@ -10,9 +10,9 @@ logging.getLogger("pyppeteer").setLevel(logging.ERROR)
 
 
 class Main:
-    def __init__(self, url=None):
+    def __init__(self, url=None, eps_limit=0.02):
         self.url = url
-        self.limit = 0.02
+        self.limit = eps_limit
 
         if getattr(sys, "frozen", False):
             application_path = os.path.dirname(sys.executable)
@@ -184,6 +184,23 @@ class Main:
 
 
 if __name__ == "__main__":
+    # Prompt the user for EPS limit
+    while True:
+        try:
+            user_input = input("Enter the EPS limit (default is 0.02 or type 'exit' to quit): ")
+            
+            if user_input.lower() == 'exit':
+                print("Exiting script.")
+                sys.exit(0)
+                
+            eps_limit = float(user_input) if user_input else 0.02
+            break
+        except ValueError:
+            print("Invalid input. Please enter a valid number for EPS limit or type 'exit' to quit.")
+
+    print(f"Using EPS limit of {eps_limit}.")
+    
     url = "https://www.set.or.th/en/market/news-and-alert/news?source=company&securityType=S&type=3&keyword=F45"
-    main = Main(url)
+    main = Main(url, eps_limit)
     main.Start()
+
