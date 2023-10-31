@@ -100,7 +100,7 @@ class Main:
     def getEPS(self, data):
         try:
             # Find the line containing EPS values
-            line = re.search(r"EPS \(baht\) (.*)Remark", data).group(1)
+            line = re.search(r"EPS \(baht\) ([^\n]*)", data).group(1)
 
             # Regular expression for matching EPS values (with named groups)
             eps_pattern = r"\(?(?P<value>\d[\d.,]*)(?P<negative>\)?)"
