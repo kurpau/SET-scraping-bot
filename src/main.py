@@ -10,7 +10,7 @@ logging.getLogger("pyppeteer").setLevel(logging.ERROR)
 
 
 class Main:
-    def __init__(self, url):
+    def __init__(self, url=None):
         self.url = url
         self.limit = 0.02
 
@@ -114,6 +114,9 @@ class Main:
                     EPS.append(-float(eps))
                 else:
                     EPS.append(float(eps))
+
+            if not EPS:
+                return None
 
             return EPS
 
