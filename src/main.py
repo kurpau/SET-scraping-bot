@@ -1,14 +1,63 @@
 from filecmp import clear_cache
 import requests, re, os, urllib.parse, logging, sys
 from bs4 import BeautifulSoup
-from requests_html import HTMLSession
+import asyncio
+from pyppeteer import launch
+import datetime
+
+def run_async_func(func):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    return loop.run_until_complete(func)
+
+def get_today():
+    return datetime.date.today(), datetime.date.today()
+
+def get_yesterday():
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    return yesterday, yesterday
+
+def get_last_5_days():
+    return datetime.date.today() - datetime.timedelta(days=5), datetime.date.today()
+
+def get_last_month():
+    return datetime.date.today() - datetime.timedelta(days=30), datetime.date.today()
+
+def get_last_3_months():
+    return datetime.date.today() - datetime.timedelta(days=90), datetime.date.today()
+
+def get_date_range():
+    date_range_switcher = {
+        '1': get_today,
+        '2': get_yesterday,
+        '3': get_last_5_days,
+        '4': get_last_month,
+        '5': get_last_3_months
+    }
+    user_choice = input("Select date period: 1. Today 2. Yesterday 3. Last 5 days 4. Last month 5. Last 3 months: ")
+    date_range_func = date_range_switcher.get(user_choice, get_today)
+    return date_range_func()
+
+def construct_url(from_date, to_date):
+    from_date_str = from_date.strftime('%Y-%m-%d')
+    to_date_str = to_date.strftime('%Y-%m-%d')
+    url_params = {
+        "source": "company",
+        "securityType": "S",
+        "type": "3",
+        "keyword": "F45",
+        "fromDate": from_date_str,
+        "toDate": to_date_str
+    }
+    url = f"https://www.set.or.th/en/market/news-and-alert/news?{urllib.parse.urlencode(url_params)}"
+
+    return url
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 # Only error messages will be shown from pyppeteer
 logging.getLogger("pyppeteer").setLevel(logging.ERROR)
-
 
 class Main:
     def __init__(self, url=None, eps_limit=0.02):
@@ -40,11 +89,13 @@ class Main:
         return cache
 
 
-    def _fetch_dynamic_html(self):
-        session = HTMLSession()
-        response = session.get(self.url)
-        response.html.render(timeout=16)
-        return response.html.html
+    async def _fetch_dynamic_html(self):
+        browser = await launch()
+        page = await browser.newPage()
+        await page.goto(self.url)
+        content = await page.content()
+        await browser.close()
+        return content
 
     def _get_card_containers(self, soup):
         heading = soup.find("span", string=lambda t: t is not None and "Search Result" in t.strip())
@@ -83,7 +134,7 @@ class Main:
 
     def get_data(self):
         logging.info("Fetching Data...")
-        html = self._fetch_dynamic_html()
+        html = run_async_func(self._fetch_dynamic_html())
         soup = BeautifulSoup(html, "html.parser")
         card_containers = self._get_card_containers(soup)
 
@@ -225,50 +276,7 @@ class Main:
 
 
 if __name__ == "__main__":
-    import datetime
 
-    def get_today():
-        return datetime.date.today(), datetime.date.today()
-
-    def get_yesterday():
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
-        return yesterday, yesterday
-
-    def get_last_5_days():
-        return datetime.date.today() - datetime.timedelta(days=5), datetime.date.today()
-
-    def get_last_month():
-        return datetime.date.today() - datetime.timedelta(days=30), datetime.date.today()
-
-    def get_last_3_months():
-        return datetime.date.today() - datetime.timedelta(days=90), datetime.date.today()
-
-    def get_date_range():
-        date_range_switcher = {
-            '1': get_today,
-            '2': get_yesterday,
-            '3': get_last_5_days,
-            '4': get_last_month,
-            '5': get_last_3_months
-        }
-        user_choice = input("Select date period: 1. Today 2. Yesterday 3. Last 5 days 4. Last month 5. Last 3 months: ")
-        date_range_func = date_range_switcher.get(user_choice, get_today)
-        return date_range_func()
-
-    def construct_url(from_date, to_date):
-        from_date_str = from_date.strftime('%Y-%m-%d')
-        to_date_str = to_date.strftime('%Y-%m-%d')
-        url_params = {
-            "source": "company",
-            "securityType": "S",
-            "type": "3",
-            "keyword": "F45",
-            "fromDate": from_date_str,
-            "toDate": to_date_str
-        }
-        url = f"https://www.set.or.th/en/market/news-and-alert/news?{urllib.parse.urlencode(url_params)}"
-
-        return url
 
     # Prompt the user for EPS limit
     while True:
