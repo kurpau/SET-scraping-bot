@@ -8,7 +8,7 @@ logging.basicConfig(
 )
 
 # Only error messages will be shown from pyppeteer
-logging.getLogger("pyppeteer").setLevel(logging.ERROR)
+logging.getLogger("playwright").setLevel(logging.ERROR)
 
 # If the application is frozen (like a packaged exe), change the directory to the executable's directory
 if getattr(sys, "frozen", False):
