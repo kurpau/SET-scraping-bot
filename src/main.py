@@ -1,9 +1,10 @@
 import logging
+import config # runs code on import, should wrap it in a function
 import os, sys, urllib.parse
+from async_utils import run_async_func
 from user_interaction import get_eps_limit, clear_cache_if_requested
 from date_utils import get_date_range
 from scraper import Scraper
-from config import output_dir
 from cache_manager import CacheManager
 from file_handler import write_to_file
 
@@ -36,6 +37,7 @@ class Main:
         self.output_dir = os.getcwd()
 
     def start(self):
+        # TODO: handle error overall, no to go to end  with errors....
         logging.info("Starting script...")
 
         if os.path.exists("result.txt"):
@@ -46,7 +48,12 @@ class Main:
         # Read cache once outside the loop to avoid reading the file multiple times
         cache = self.cache_manager._read_cache()
 
-        for stock in self.scraper.get_data():
+        self.scraper.start_browser()
+        logging.info("Fetching Data...")
+        html = self.scraper._fetch_dynamic_html()
+
+        # Loop as long as the button exists
+        for stock in self.scraper.get_data(html):
             logging.info(f"Processing stock {stock['symbol']}...")
             stock_id = stock['id']
             if stock_id not in cache:
@@ -54,21 +61,28 @@ class Main:
 
                 eps = self.scraper.getEPS(data)
 
+                stock_name = self.scraper.getName(data)
+
                 if eps is None:
                     logging.warning(
                         f"EPS extraction failed for stock with url: {stock['url']}"
                     )
+                    self.cache_manager._write_cache({stock_id: ([None, None], stock_name)})
                     continue
 
                 # Limit to first 2 EPS values
                 eps = eps[:2]
-                stock_name = self.scraper.getName(data)
 
                 # Write to cache
                 self.cache_manager._write_cache({stock_id: ([eps[0], eps[1]], stock_name)})
             else:
                 # If it's in cache, use cached values
                 eps = cache[stock_id][0]
+                if eps is None:
+                    logging.warning(
+                        f"Skipping already processed stock, no previous EPS data from cache"
+                    )
+                    continue
                 stock_name = cache[stock_id][1]
                 logging.info(f"Stock [{stock['symbol']}] already processed before, using EPS from cache: {eps}")
 
@@ -81,10 +95,11 @@ class Main:
                 write_to_file(stock_name, symbol, eps, url)
                 stocks_meeting_criteria += 1
 
+
         if stocks_meeting_criteria == 0:
             logging.warning("No stocks met the criteria. The output file is empty.")
         else:
-            logging.info('Process finished. Check the "result.txt" file.')
+            logging.info(f'Process finished. {stocks_meeting_criteria} stocks meet the criteria. Check the "result.txt" file.')
 
 if __name__ == "__main__":
     eps_limit = get_eps_limit()

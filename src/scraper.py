@@ -1,19 +1,32 @@
 import requests, re, os, urllib.parse, logging, sys
 from bs4 import BeautifulSoup
-from pyppeteer import launch
+from playwright.sync_api import sync_playwright
 from async_utils import run_async_func
 
 class Scraper:
     def __init__(self, url, eps_limit):
         self.url = url
         self.limit = eps_limit
+        self.playwright = None
+        self.browser = None
+        self.page = None
 
-    async def _fetch_dynamic_html(self ):
-        browser = await launch()
-        page = await browser.newPage()
-        await page.goto(self.url, waitUntil='networkidle0')
-        content = await page.content()
-        await browser.close()
+    def start_browser(self):
+        self.playwright = sync_playwright().start()
+        self.browser = self.playwright.chromium.launch()
+        self.page = self.browser.new_page()
+
+    def close_browser(self):
+        if self.browser:
+            self.browser.close()
+            self.playwright.stop()
+
+    def _fetch_dynamic_html(self):
+        if not self.page:  # If page is not initialized, start the browser
+            self.start_browser()
+
+        self.page.goto(self.url)
+        content = self.page.content()
         return content
 
     def _get_card_containers(self, soup):
@@ -22,7 +35,7 @@ class Scraper:
             logging.error(f"No search results found. Check this URL to confirm: {self.url}")
             exit(1)
 
-        parent_div = heading.find_parent("div", class_="mb-5") # TODO: handle for all not found cases
+        parent_div = heading.find_parent("div", class_="mb-5") 
         return parent_div.find_all('div', class_='card-quote-news-contanier')
 
 
@@ -51,19 +64,37 @@ class Scraper:
         return actual_url, symbol, stock_id  # Returning id along with actual_url and symbol
 
 
-    def get_data(self):
-        logging.info("Fetching Data...")
-        html = run_async_func(self._fetch_dynamic_html())
-        soup = BeautifulSoup(html, "html.parser")
-        card_containers = self._get_card_containers(soup)
-
+    def get_data(self, html):
         results = []
-        for container in card_containers:
-            actual_url, symbol, stock_id = self._extract_params(container)
-            if actual_url and symbol:
-                results.append({"url": actual_url, "symbol": symbol, "id": stock_id})
+        i = 1
+        next_button = self.page.get_by_label("Go to next page")
+        while next_button:
+            soup = BeautifulSoup(html, "html.parser")
+            card_containers = self._get_card_containers(soup)
+            logging.info(f"Scraping page [{i}]")
 
+            next_button = self.page.get_by_label("Go to next page")
+
+            for container in card_containers:
+                actual_url, symbol, stock_id = self._extract_params(container)
+                if actual_url and symbol:
+                    results.append({"url": actual_url, "symbol": symbol, "id": stock_id})
+            logging.info(f"Results fetched for page [{i}]")
+
+            next_button = self.page.get_by_label("Go to next page")
+            if next_button and next_button.is_disabled():
+                logging.info("The 'next' button is disabled, cannot click.")
+                break
+            else:
+                # press the button
+                next_button.click()
+                self.page.wait_for_selector('text="Search Result"')
+                html = self.page.content()
+                i += 1
+
+        self.close_browser()
         logging.info("Fetched stock data. Processing stocks...")
+        print(len(results))
         return results
 
     def getReportText(self, link):

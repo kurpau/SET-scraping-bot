@@ -17,6 +17,9 @@ class CacheManager:
         for line in data:
             parts = line.strip().split("|")
             stock_id, curr_eps, prev_eps, stock_name = parts
-            cache[stock_id] = ([float(curr_eps), float(prev_eps)], stock_name)
+            if curr_eps == "None" or prev_eps == "None":
+                cache[stock_id] = (None, stock_name)
+            else:
+                cache[stock_id] = ([float(curr_eps), float(prev_eps)], stock_name)
         return cache
     
