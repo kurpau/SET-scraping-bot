@@ -1,7 +1,6 @@
 import requests, re, os, urllib.parse, logging, sys
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
-from async_utils import run_async_func
 
 class Scraper:
     def __init__(self, url, eps_limit):
