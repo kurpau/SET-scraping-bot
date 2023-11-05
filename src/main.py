@@ -1,14 +1,14 @@
 import logging
 import traceback
-import config # runs code on import, should wrap it in a function
+from config import setup_logging
 import os, sys, urllib.parse
-from async_utils import run_async_func
 from user_interaction import get_eps_limit, clear_cache_if_requested
 from date_utils import get_date_range
 from scraper import Scraper
 from cache_manager import CacheManager
 from file_handler import write_to_file
 
+setup_logging()
 
 def construct_url(from_date, to_date):
     from_date_str = from_date.strftime('%Y-%m-%d')
@@ -54,8 +54,7 @@ class Main:
             html = self.scraper._fetch_dynamic_html()
 
             # Process stocks
-            for stock in self.scraper.get_data(html):
-                # The code block where errors could happen during stock processing
+            for stock in self.scraper.get_data(html): # Fetches data on every run
                 try:
                     logging.info(f"Processing stock {stock['symbol']}...")
                     stock_id = stock['id']
