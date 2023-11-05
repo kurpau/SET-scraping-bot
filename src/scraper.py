@@ -83,7 +83,7 @@ class Scraper:
 
             next_button = self.page.get_by_label("Go to next page")
             if next_button and next_button.is_disabled():
-                logging.info("The 'next' button is disabled, cannot click.")
+                logging.info("The 'next' button is disabled, this is the last page.")
                 break
             else:
                 # press the button
