@@ -2,6 +2,7 @@ import requests, re, os, urllib.parse, logging
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
+
 class Scraper:
     def __init__(self, url, eps_limit):
         self.url = url
@@ -29,14 +30,17 @@ class Scraper:
         return content
 
     def _get_card_containers(self, soup):
-        heading = soup.find("span", string=lambda t: t is not None and "Search Result" in t.strip())
+        heading = soup.find(
+            "span", string=lambda t: t is not None and "Search Result" in t.strip()
+        )
         if not heading:
-            logging.error(f"No search results found. Check this URL to confirm: {self.url}")
+            logging.error(
+                f"No search results found. Check this URL to confirm: {self.url}"
+            )
             exit(1)
 
-        parent_div = heading.find_parent("div", class_="mb-5") 
-        return parent_div.find_all('div', class_='card-quote-news-contanier')
-
+        parent_div = heading.find_parent("div", class_="mb-5")
+        return parent_div.find_all("div", class_="card-quote-news-contanier")
 
     def _extract_params(self, container):
         url_element = container.find("a", {"class": "btn-social-facebook"})
@@ -46,13 +50,15 @@ class Scraper:
         actual_url = query_params["u"][0]
 
         parsed_actual_url = urllib.parse.urlparse(actual_url)
-        stock_id = urllib.parse.parse_qs(parsed_actual_url.query).get('id', [None])[0]
+        stock_id = urllib.parse.parse_qs(parsed_actual_url.query).get("id", [None])[0]
 
         if not stock_id:
             logging.error("ID not found in the URL.")
             exit(1)
-            
-        symbol_element = container.select_one("div.d-flex.flex-column.align-items-center.fs-18px.title-font-family.securities-filed.ps-md-3 > div.me-auto")
+
+        symbol_element = container.select_one(
+            "div.d-flex.flex-column.align-items-center.fs-18px.title-font-family.securities-filed.ps-md-3 > div.me-auto"
+        )
         if not symbol_element:
             logging.error("Symbol element not found in container.")
             exit(1)
@@ -60,8 +66,11 @@ class Scraper:
         symbol = symbol_element.text.strip()
         actual_url += f"&symbol={symbol}"
 
-        return actual_url, symbol, stock_id  # Returning id along with actual_url and symbol
-
+        return (
+            actual_url,
+            symbol,
+            stock_id,
+        )  # Returning id along with actual_url and symbol
 
     def get_data(self, html):
         results = []
@@ -77,7 +86,9 @@ class Scraper:
             for container in card_containers:
                 actual_url, symbol, stock_id = self._extract_params(container)
                 if actual_url and symbol:
-                    results.append({"url": actual_url, "symbol": symbol, "id": stock_id})
+                    results.append(
+                        {"url": actual_url, "symbol": symbol, "id": stock_id}
+                    )
             logging.info(f"Results fetched for page [{i}]")
 
             next_button = self.page.get_by_label("Go to next page")
@@ -93,7 +104,7 @@ class Scraper:
 
         self.close_browser()
         logging.info("Fetched stock data. Processing stocks...")
-        print(len(results))
+        logging.info(f"{len(results)} stocks found!")
         return results
 
     def getReportText(self, link):
