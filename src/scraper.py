@@ -1,4 +1,4 @@
-import requests, re, os, urllib.parse, logging, sys
+import requests, re, os, urllib.parse, logging
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
@@ -12,7 +12,7 @@ class Scraper:
 
     def start_browser(self):
         self.playwright = sync_playwright().start()
-        self.browser = self.playwright.chromium.launch()
+        self.browser = self.playwright.webkit.launch()
         self.page = self.browser.new_page()
 
     def close_browser(self):
