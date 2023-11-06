@@ -10,20 +10,22 @@ from file_handler import write_to_file
 
 setup_logging()
 
+
 def construct_url(from_date, to_date):
-    from_date_str = from_date.strftime('%Y-%m-%d')
-    to_date_str = to_date.strftime('%Y-%m-%d')
+    from_date_str = from_date.strftime("%Y-%m-%d")
+    to_date_str = to_date.strftime("%Y-%m-%d")
     url_params = {
         "source": "company",
         "securityType": "S",
         "type": "3",
         "keyword": "F45",
         "fromDate": from_date_str,
-        "toDate": to_date_str
+        "toDate": to_date_str,
     }
     url = f"https://www.set.or.th/en/market/news-and-alert/news?{urllib.parse.urlencode(url_params)}"
 
     return url
+
 
 class Main:
     def __init__(self, url=None, eps_limit=0.02):
@@ -54,10 +56,10 @@ class Main:
             html = self.scraper._fetch_dynamic_html()
 
             # Process stocks
-            for stock in self.scraper.get_data(html): # Fetches data on every run
+            for stock in self.scraper.get_data(html):  # Fetches data on every run
                 try:
                     logging.info(f"Processing stock {stock['symbol']}...")
-                    stock_id = stock['id']
+                    stock_id = stock["id"]
                     if stock_id not in cache:
                         data = self.scraper.getReportText(stock["url"])
 
@@ -69,14 +71,18 @@ class Main:
                             logging.warning(
                                 f"EPS extraction failed for stock with url: {stock['url']}"
                             )
-                            self.cache_manager._write_cache({stock_id: ([None, None], stock_name)})
+                            self.cache_manager._write_cache(
+                                {stock_id: ([None, None], stock_name)}
+                            )
                             continue
 
                         # Limit to first 2 EPS values
                         eps = eps[:2]
 
                         # Write to cache
-                        self.cache_manager._write_cache({stock_id: ([eps[0], eps[1]], stock_name)})
+                        self.cache_manager._write_cache(
+                            {stock_id: ([eps[0], eps[1]], stock_name)}
+                        )
                     else:
                         # If it's in cache, use cached values
                         eps = cache[stock_id][0]
@@ -86,7 +92,9 @@ class Main:
                             )
                             continue
                         stock_name = cache[stock_id][1]
-                        logging.info(f"Stock [{stock['symbol']}] already processed before, using EPS from cache: {eps}")
+                        logging.info(
+                            f"Stock [{stock['symbol']}] already processed before, using EPS from cache: {eps}"
+                        )
 
                     if self.scraper.EPSValid(eps):
                         symbol = stock["symbol"]
@@ -98,18 +106,26 @@ class Main:
                         stocks_meeting_criteria += 1
 
                 except Exception as e:
-                    logging.error(f"An error occurred while processing stock {stock['symbol']}: {e}")
-                    break     
-                
+                    logging.error(
+                        f"An error occurred while processing stock {stock['symbol']}: {e}"
+                    )
+                    break
+
             # After processing all stocks
             if stocks_meeting_criteria == 0:
                 logging.warning("No stocks met the criteria. The output file is empty.")
             else:
-                logging.info(f'Process finished. {stocks_meeting_criteria} stocks meet the criteria. Check the "result.txt" file.')
-                
+                logging.info(
+                    f'Process finished. {stocks_meeting_criteria} stocks meet the criteria. Check the "result.txt" file.'
+                )
+
+            input("Press Enter to continue...")
+
         except Exception as e:
             logging.error(f"An unexpected error occurred: {e}")
-            traceback.print_exc()  
+            traceback.print_exc()
+            input("Press Enter to continue...")
+
 
 if __name__ == "__main__":
     eps_limit = get_eps_limit()
@@ -123,4 +139,3 @@ if __name__ == "__main__":
     url = construct_url(from_date, to_date)
     main_processor = Main(url, eps_limit)
     main_processor.start()
-
