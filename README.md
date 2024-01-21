@@ -42,6 +42,7 @@ If you need to run the bot from the source code or wish to modify the code, foll
   ```sh
   cd SET-scraping-bot
   pip install -r requirements.txt
+  playwrigth install chrome
   ```
 
 ## Usage
@@ -60,6 +61,7 @@ To execute the bot from the Python script:
 
 1. Open a terminal or command prompt in the project directory.
 2. Run the script with:
+
    ```sh
-   python main.py
+   python src/main.py
    ```
