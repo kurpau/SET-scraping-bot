@@ -3,9 +3,7 @@ import os
 import re
 import urllib.parse
 import requests_cache
-import datetime
 
-# import requests
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
@@ -17,10 +15,7 @@ class Scraper:
         self.playwright = None
         self.browser = None
         self.page = None
-        self.cache_duration = datetime.timedelta(
-            hours=1
-        )  # Duration for which the cache is valid
-        requests_cache.install_cache("stock_cache", expire_after=self.cache_duration)
+        requests_cache.install_cache("stock_cache")
 
     def start_browser(self):
         self.playwright = sync_playwright().start()
@@ -120,23 +115,16 @@ class Scraper:
                 html = self.page.content()
                 i += 1
 
-        self.close_browser()
         logging.info(f"{len(results)} Stocks found!")
-        logging.info("Fetching report data...")
         return results
 
-    def getReportText(self, link):
+    def getReportText(self, url):
         # Use the requests_cache session to get the page content
-        with requests_cache.CachedSession(expire_after=self.cache_duration) as session:
-            try:
-                # Get page HTML content
-                response = session.get(link)
-                response.raise_for_status()  # Check for HTTP request errors
-                html_doc = response.content
-            except Exception as e:
-                logging.error(f"Failed to fetch HTML content from {link}")
-                logging.debug(f"Exception details: {e}")
-                return None
+        with requests_cache.CachedSession() as session:
+            # Get page HTML content
+            response = session.get(url)
+            response.raise_for_status()  # Check for HTTP request errors
+            html_doc = response.content
 
             try:
                 soup = BeautifulSoup(html_doc, "html.parser")
@@ -146,7 +134,7 @@ class Scraper:
                 report_text = " ".join(report_text.split())
                 return report_text
             except AttributeError as e:
-                logging.error(f"Failed to extract report text from {link}")
+                logging.error(f"Failed to extract report text from {url}")
                 logging.debug(f"Exception details: {e}")
                 return None
 
@@ -180,7 +168,7 @@ class Scraper:
             if not EPS:
                 return None
 
-            return EPS
+            return EPS[:2]  # Only the current year
 
         except AttributeError as e:
             logging.debug("Failed to extract EPS values: RE pattern not found")
