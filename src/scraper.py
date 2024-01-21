@@ -90,9 +90,7 @@ class Scraper:
             for container in card_containers:
                 actual_url, symbol, stock_id = self._extract_params(container)
                 if actual_url and symbol:
-                    results.append(
-                        {"url": actual_url, "symbol": symbol, "id": stock_id}
-                    )
+                    results.append(actual_url)
             logging.info(f"Results fetched for page [{i}]")
 
             next_button = self.page.get_by_label("Go to next page")
@@ -100,7 +98,6 @@ class Scraper:
                 logging.info(f"The 'next' button is disabled, [{i}] was the last page.")
                 break
             else:
-                # press the button
                 next_button.click()
                 self.page.wait_for_selector('text="Search Result"')
                 html = self.page.content()
@@ -109,7 +106,6 @@ class Scraper:
         self.close_browser()
         logging.info(f"{len(results)} URLs found!")
         logging.info("Fetching report data...")
-        print(results)
         return results
 
     def getReportText(self, link):
