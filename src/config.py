@@ -2,10 +2,13 @@ import logging
 import sys
 import os
 
+
 def setup_logging():
     # Basic configuration for logging
     logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+        level=logging.INFO,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
 
     # Only error messages will be shown from playwright
@@ -17,3 +20,4 @@ def setup_logging():
         os.chdir(application_path)
     else:
         application_path = os.path.dirname(__file__)
+
