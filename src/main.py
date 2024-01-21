@@ -1,12 +1,15 @@
 import logging
+import os
+import sys
 import traceback
-from config import setup_logging
-import os, sys, urllib.parse
-from user_interaction import get_eps_limit, clear_cache_if_requested
-from date_utils import get_date_range
-from scraper import Scraper
+import urllib.parse
+
 from cache_manager import CacheManager
+from config import setup_logging
+from date_utils import get_date_range
 from file_handler import write_to_file
+from scraper import Scraper
+from user_interaction import clear_cache_if_requested, get_eps_limit
 
 setup_logging()
 
@@ -52,11 +55,13 @@ class Main:
             cache = self.cache_manager._read_cache()
 
             self.scraper.start_browser()
-            logging.info("Fetching Data...")
+            logging.info("Fetching URLs...")
             html = self.scraper._fetch_dynamic_html()
+            urls = self.scraper.fetch_urls(html)
 
             # Process stocks
-            for stock in self.scraper.get_data(html):  # Fetches data on every run
+            # Fetches data on every run
+            for stock in urls:
                 try:
                     logging.info(f"Processing stock {stock['symbol']}...")
                     stock_id = stock["id"]
@@ -88,7 +93,7 @@ class Main:
                         eps = cache[stock_id][0]
                         if eps is None:
                             logging.warning(
-                                f"Skipping already processed stock, no previous EPS data from cache"
+                                "Skipping already processed stock, no previous EPS data from cache"
                             )
                             continue
                         stock_name = cache[stock_id][1]

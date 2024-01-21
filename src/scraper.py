@@ -1,4 +1,9 @@
-import requests, re, os, urllib.parse, logging
+import logging
+import os
+import re
+import urllib.parse
+
+import requests
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 
@@ -72,14 +77,13 @@ class Scraper:
             stock_id,
         )  # Returning id along with actual_url and symbol
 
-    def get_data(self, html):
+    def fetch_urls(self, html):
         results = []
         i = 1
         next_button = self.page.get_by_label("Go to next page")
         while next_button:
             soup = BeautifulSoup(html, "html.parser")
             card_containers = self._get_card_containers(soup)
-            logging.info(f"Scraping page [{i}]")
 
             next_button = self.page.get_by_label("Go to next page")
 
@@ -93,7 +97,7 @@ class Scraper:
 
             next_button = self.page.get_by_label("Go to next page")
             if next_button and next_button.is_disabled():
-                logging.info("The 'next' button is disabled, this is the last page.")
+                logging.info(f"The 'next' button is disabled, [{i}] was the last page.")
                 break
             else:
                 # press the button
@@ -103,8 +107,9 @@ class Scraper:
                 i += 1
 
         self.close_browser()
-        logging.info("Fetched stock data. Processing stocks...")
-        logging.info(f"{len(results)} stocks found!")
+        logging.info(f"{len(results)} URLs found!")
+        logging.info("Fetching report data...")
+        print(results)
         return results
 
     def getReportText(self, link):
