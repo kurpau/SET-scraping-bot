@@ -1,5 +1,5 @@
 result.txt
-stock_cache.sqlite
+*.sqlite
 .vscode
 
 # Byte-compiled / optimized / DLL files
