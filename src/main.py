@@ -1,5 +1,4 @@
 import logging
-import datetime
 import os
 import sys
 import traceback
@@ -10,7 +9,7 @@ from config import setup_logging
 from date_utils import get_date_range
 from file_handler import write_to_file
 from scraper import Scraper
-from user_interaction import get_eps_limit
+from user_interaction import clear_cache_if_requested, get_eps_limit
 
 setup_logging()
 
@@ -45,12 +44,7 @@ class Main:
     def print_progress(self, completed, total):
         """Prints the progress of a task."""
         progress = (completed / total) * 100
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(
-            f"{current_time} - INFO - Fetching reports: {progress:.2f}% ({completed}/{total})",
-            end="\r",
-            flush=True,
-        )
+        print(f"Progress: {progress:.2f}% ({completed}/{total})", end="\r", flush=True)
 
     def fetch_reports(self, stocks):
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -83,53 +77,75 @@ class Main:
             return results
 
     def start(self):
-        logging.info("Starting script...")
-
-        if os.path.exists("result.txt"):
-            os.remove("result.txt")
-
-        stocks_meeting_criteria = 0
-
         try:
+            logging.info("Starting script...")
+
+            if os.path.exists("result.txt"):
+                os.remove("result.txt")
+
+            stocks_meeting_criteria = 0
+
             self.scraper.start_browser()
-            logging.info("Fetching Stocks...")
+            logging.info("Fetching URLs...")
             html = self.scraper._fetch_dynamic_html()
             stocks = self.scraper.fetch_stocks(html)
             stock_data = self.fetch_reports(stocks)
 
-            logging.info("Checking EPS validity...")
+            # {'url': 'https://www.set.or.th/en/market/news-and-alert/newsdetails?id=85356100&symbol=KSL', 'symbol': 'KSL', 'id': '85356100', 'stock_name': 'ALL INSPIRE DEVELOPMENT PUBLIC COMPANY LIMITED', 'eps': [-0.1, -0.11, -1.06, -0.28]}
+
             for stock in stock_data:
-                stock_name = stock.get("stock_name")
-                eps = stock.get("eps")
-                symbol = stock.get("symbol")
-                url = stock.get("url")
+                try:
+                    logging.info(f"Processing stock {stock['symbol']}...")
+                    stock_id = stock["id"]
+                    stock_name = stock["stock_name"]
+                    eps = stock["eps"]
 
-                if not stock_name or not eps:
-                    logging.warning(
-                        f'Skipping stock {symbol} with url: "{url}" due to missing data'
+                    if eps is None:
+                        logging.warning(
+                            f"EPS extraction failed for stock with url: {stock['url']}"
+                        )
+                        self.cache_manager._write_cache(
+                            {stock_id: ([None, None], stock_name)}
+                        )
+                        continue
+
+                    # Limit to first 2 EPS values (current year)
+                    eps = eps[:2]
+
+                    # Write to cache
+                    self.cache_manager._write_cache(
+                        {stock_id: ([eps[0], eps[1]], stock_name)}
                     )
-                    continue
 
-                if self.scraper.EPSValid(eps):
-                    write_to_file(stock_name, symbol, eps, url)
-                    stocks_meeting_criteria += 1
+                    if self.scraper.EPSValid(eps):
+                        symbol = stock["symbol"]
+                        url = stock["url"]
+                        logging.info(
+                            f"Stock {stock['symbol']} meets the criteria. Writing to file..."
+                        )
+                        write_to_file(stock_name, symbol, eps, url)
+                        stocks_meeting_criteria += 1
+
+                except Exception as e:
+                    logging.error(
+                        f"An error occurred while processing stock {stock['symbol']}: {e}"
+                    )
+                    break
+
+            # After processing all stocks
+            if stocks_meeting_criteria == 0:
+                logging.warning("No stocks met the criteria. The output file is empty.")
+            else:
+                logging.info(
+                    f'Process finished. {stocks_meeting_criteria} stocks meet the criteria. Check the "result.txt" file.'
+                )
+
+            input("Press Enter to continue...")
 
         except Exception as e:
             logging.error(f"An unexpected error occurred: {e}")
             traceback.print_exc()
-        finally:
-            self.scraper.close_browser()
-            logging.debug("Browser closed.")
-
-        # After processing all stocks
-        if stocks_meeting_criteria == 0:
-            logging.warning("No stocks met the criteria. The output file is empty.")
-        else:
-            logging.info(
-                f'Process finished. {stocks_meeting_criteria} stocks meet the criteria. Check the "result.txt" file.'
-            )
-
-        input("Press Enter to continue...")
+            input("Press Enter to continue...")
 
 
 if __name__ == "__main__":
@@ -138,6 +154,8 @@ if __name__ == "__main__":
 
     from_date, to_date = get_date_range()
     logging.info(f"Date range chosen: from {from_date} to {to_date}")
+
+    clear_cache_if_requested()
 
     url = construct_url(from_date, to_date)
     main_processor = Main(url, eps_limit)
