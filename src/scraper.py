@@ -120,9 +120,7 @@ class Scraper:
                 html = self.page.content()
                 i += 1
 
-        self.close_browser()
         logging.info(f"{len(results)} Stocks found!")
-        logging.info("Fetching report data...")
         return results
 
     def getReportText(self, link):
