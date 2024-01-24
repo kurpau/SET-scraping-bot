@@ -109,9 +109,6 @@ class Main:
                     )
                     continue
 
-                # Limit to first 2 EPS values (current year)
-                eps = eps[:2]
-
                 if self.scraper.EPSValid(eps):
                     write_to_file(stock_name, symbol, eps, url)
                     stocks_meeting_criteria += 1

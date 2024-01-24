@@ -178,7 +178,7 @@ class Scraper:
             if not EPS:
                 return None
 
-            return EPS
+            return EPS[:2]
 
         except AttributeError as e:
             logging.debug("Failed to extract EPS values: RE pattern not found")
