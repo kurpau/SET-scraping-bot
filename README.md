@@ -42,7 +42,7 @@ If you need to run the bot from the source code or wish to modify the code, foll
   ```sh
   cd SET-scraping-bot
   pip install -r requirements.txt
-  playwrigth install chrome
+  playwrigth install
   ```
 
 ## Usage
