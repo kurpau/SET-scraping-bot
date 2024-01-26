@@ -3,8 +3,6 @@ import os
 import sys
 import traceback
 import urllib.parse
-import concurrent.futures
-import datetime
 
 from config import setup_logging
 from date_utils import get_date_range
@@ -42,47 +40,6 @@ class Main:
 
         self.output_dir = os.getcwd()
 
-    def print_progress(self, completed, total):
-        """Prints the progress of a task."""
-        progress = (completed / total) * 100
-        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        print(
-            f"{current_time} - INFO - Fetching Reports: {progress:.2f}% ({completed}/{total})",
-            end="\r",
-            flush=True,
-        )
-
-    def fetch_reports(self, stocks):
-        with concurrent.futures.ThreadPoolExecutor() as executor:
-            # Submit a future for each stock's URL and store in a dictionary
-            future_to_stock = {
-                executor.submit(self.scraper.getReportText, stock["url"]): stock
-                for stock in stocks
-            }
-            total_stocks = len(stocks)
-            completed = 0
-            results = []
-            for future in concurrent.futures.as_completed(future_to_stock):
-                stock = future_to_stock[future]
-                completed += 1
-                try:
-                    data = future.result()
-                    if data is not None:
-                        eps = self.scraper.getEPS(data)
-                        stock_name = self.scraper.getName(data)
-                        stock["stock_name"] = stock_name
-                        stock["eps"] = eps
-                        results.append(stock)
-                except Exception as e:
-                    logging.error(f"An error occurred: {e}")
-
-            # Update progress
-            self.print_progress(completed, total_stocks)
-
-        print()
-        logging.info("All reports fetched.")
-        return results
-
     def start(self):
         logging.info("Starting script...")
 
@@ -96,7 +53,7 @@ class Main:
             logging.info("Fetching Stocks...")
             html = self.scraper._fetch_dynamic_html()
             stocks = self.scraper.fetch_stocks(html)
-            stock_data = self.fetch_reports(stocks)
+            stock_data = self.scraper.fetch_reports(stocks)
 
             for stock in stock_data:
                 stock_name = stock.get("stock_name")

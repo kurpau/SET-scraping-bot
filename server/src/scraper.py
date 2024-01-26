@@ -4,6 +4,7 @@ import re
 import urllib.parse
 import requests_cache
 import datetime
+import concurrent.futures
 
 # import requests
 from bs4 import BeautifulSoup
@@ -122,6 +123,47 @@ class Scraper:
 
         logging.info(f"{len(results)} Stocks found!")
         return results
+
+    def fetch_reports(self, stocks):
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            # Submit a future for each stock's URL and store in a dictionary
+            future_to_stock = {
+                executor.submit(self.getReportText, stock["url"]): stock
+                for stock in stocks
+            }
+            total_stocks = len(stocks)
+            completed = 0
+            results = []
+            for future in concurrent.futures.as_completed(future_to_stock):
+                stock = future_to_stock[future]
+                completed += 1
+                try:
+                    data = future.result()
+                    if data is not None:
+                        eps = self.getEPS(data)
+                        stock_name = self.getName(data)
+                        stock["stock_name"] = stock_name
+                        stock["eps"] = eps
+                        results.append(stock)
+                except Exception as e:
+                    logging.error(f"An error occurred: {e}")
+
+            # Update progress
+            self.print_progress(completed, total_stocks)
+
+        print()
+        logging.info("All reports fetched.")
+        return results
+
+    def print_progress(self, completed, total):
+        """Prints the progress of a task."""
+        progress = (completed / total) * 100
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        print(
+            f"{current_time} - INFO - Fetching Reports: {progress:.2f}% ({completed}/{total})",
+            end="\r",
+            flush=True,
+        )
 
     def getReportText(self, link):
         # Use the requests_cache session to get the page content
