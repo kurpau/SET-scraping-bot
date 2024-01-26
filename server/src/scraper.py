@@ -22,17 +22,15 @@ class Scraper:
             hours=1
         )  # Duration for which the cache is valid
         requests_cache.install_cache("stock_cache", expire_after=self.cache_duration)
-        self.start_browser()
 
     def start_browser(self):
         self.playwright = sync_playwright().start()
-        self.browser = self.playwright.webkit.launch()
+        self.browser = self.playwright.webkit.launch(headless=False)
         self.page = self.browser.new_page()
 
     def close_browser(self):
-        if self.browser:
-            self.browser.close()
-            self.playwright.stop()
+        self.browser.close()
+        self.playwright.stop()
 
     def _get_card_containers(self, soup):
         heading = soup.find(
@@ -75,7 +73,7 @@ class Scraper:
             actual_url,
             symbol,
             stock_id,
-        )  # Returning id along with actual_url and symbol
+        )
 
     def set_dropdown_value(self, level):
         levels = {1: 10, 2: 20, 3: 30, 4: 50, 5: 100}
@@ -89,6 +87,7 @@ class Scraper:
         return int(second_last_li.inner_text().strip())
 
     def fetch_stocks(self):
+        self.start_browser()
         self.page.goto(self.url)
         self.get_max_pages()
 
@@ -122,14 +121,13 @@ class Scraper:
                 )
                 break
             else:
-                # press the button
                 next_button.click()
                 page += 1
 
         print()
         logging.info(f"{len(results)} Stocks found!")
-        results = self.fetch_reports(results)
         self.close_browser()
+        results = self.fetch_reports(results)
         return results
 
     def fetch_reports(self, stocks):
@@ -145,16 +143,13 @@ class Scraper:
             for future in concurrent.futures.as_completed(future_to_stock):
                 stock = future_to_stock[future]
                 completed += 1
-                try:
-                    data = future.result()
-                    if data is not None:
-                        eps = self.getEPS(data)
-                        stock_name = self.getName(data)
-                        stock["stock_name"] = stock_name
-                        stock["eps"] = eps
-                        results.append(stock)
-                except Exception as e:
-                    logging.error(f"An error occurred: {e}")
+                data = future.result()
+                if data is not None:
+                    eps = self.getEPS(data)
+                    stock_name = self.getName(data)
+                    stock["stock_name"] = stock_name
+                    stock["eps"] = eps
+                    results.append(stock)
 
                 self.print_progress(completed, total_stocks, "Fetching Reports")
 
