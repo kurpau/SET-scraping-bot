@@ -233,13 +233,6 @@ class Scraper:
             logging.debug(f"Exception details: {e}")
             return None
 
-    def EPSValid(self, eps_list):
-        curr_eps = eps_list[0]
-        prev_eps = eps_list[1]
-        if curr_eps > 0 and prev_eps > 0 and (curr_eps - prev_eps >= self.limit):
-            return True
-        return False
-
     def WriteToFile(self, name, ticker, eps_list, url):
         file_path = os.path.join(self.output_dir, "result.txt")
         with open(file_path, "a") as f:

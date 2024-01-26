@@ -38,6 +38,13 @@ class Main:
 
         self.output_dir = os.getcwd()
 
+    def EPSValid(self, eps_list):
+        curr_eps = eps_list[0]
+        prev_eps = eps_list[1]
+        if curr_eps > 0 and prev_eps > 0 and (curr_eps - prev_eps >= self.limit):
+            return True
+        return False
+
     def start(self):
         logging.info("Starting script...")
 
@@ -61,23 +68,23 @@ class Main:
                     )
                     continue
 
-                if self.scraper.EPSValid(eps):  # Change the responsability
+                if self.EPSValid(eps):
                     write_to_file(stock_name, symbol, eps, url)
                     stocks_meeting_criteria += 1
+
+            # After processing all stocks
+            if stocks_meeting_criteria == 0:
+                logging.warning("No stocks met the criteria. The output file is empty.")
+            else:
+                logging.info(
+                    f'Process finished. {stocks_meeting_criteria} stocks meet the criteria. Check the "result.txt" file.'
+                )
+
+            input("Press Enter to continue...")
 
         except Exception as e:
             logging.error(f"An unexpected error occurred: {e}")
             traceback.print_exc()
-
-        # After processing all stocks
-        if stocks_meeting_criteria == 0:
-            logging.warning("No stocks met the criteria. The output file is empty.")
-        else:
-            logging.info(
-                f'Process finished. {stocks_meeting_criteria} stocks meet the criteria. Check the "result.txt" file.'
-            )
-
-        input("Press Enter to continue...")
 
 
 if __name__ == "__main__":
