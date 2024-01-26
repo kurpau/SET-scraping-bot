@@ -54,15 +54,16 @@ class Main:
 
     def fetch_reports(self, stocks):
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            # Submit a future for each stock's URL
-            futures = [
-                executor.submit(self.scraper.getReportText, stock["url"])
+            # Submit a future for each stock's URL and store in a dictionary
+            future_to_stock = {
+                executor.submit(self.scraper.getReportText, stock["url"]): stock
                 for stock in stocks
-            ]
+            }
             total_stocks = len(stocks)
             completed = 0
             results = []
-            for future, stock in zip(concurrent.futures.as_completed(futures), stocks):
+            for future in concurrent.futures.as_completed(future_to_stock):
+                stock = future_to_stock[future]
                 completed += 1
                 try:
                     data = future.result()
@@ -75,12 +76,12 @@ class Main:
                 except Exception as e:
                     logging.error(f"An error occurred: {e}")
 
-                # Update progress
-                self.print_progress(completed, total_stocks)
+            # Update progress
+            self.print_progress(completed, total_stocks)
 
-            print()
-            logging.info("All reports fetched.")
-            return results
+        print()
+        logging.info("All reports fetched.")
+        return results
 
     def start(self):
         logging.info("Starting script...")
