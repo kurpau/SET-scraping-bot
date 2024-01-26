@@ -24,9 +24,7 @@ def construct_url(from_date, to_date):
         "fromDate": from_date_str,
         "toDate": to_date_str,
     }
-    url = f"https://www.set.or.th/en/market/news-and-alert/news?{urllib.parse.urlencode(url_params)}"
-
-    return url
+    return f"https://www.set.or.th/en/market/news-and-alert/news?{urllib.parse.urlencode(url_params)}"
 
 
 class Main:
@@ -49,11 +47,7 @@ class Main:
         stocks_meeting_criteria = 0
 
         try:
-            self.scraper.start_browser()
-            logging.info("Fetching Stocks...")
-            html = self.scraper._fetch_dynamic_html()
-            stocks = self.scraper.fetch_stocks(html)
-            stock_data = self.scraper.fetch_reports(stocks)
+            stock_data = self.scraper.fetch_stocks()
 
             for stock in stock_data:
                 stock_name = stock.get("stock_name")
@@ -67,15 +61,13 @@ class Main:
                     )
                     continue
 
-                if self.scraper.EPSValid(eps):
+                if self.scraper.EPSValid(eps):  # Change the responsability
                     write_to_file(stock_name, symbol, eps, url)
                     stocks_meeting_criteria += 1
 
         except Exception as e:
             logging.error(f"An unexpected error occurred: {e}")
             traceback.print_exc()
-        finally:
-            self.scraper.close_browser()
 
         # After processing all stocks
         if stocks_meeting_criteria == 0:

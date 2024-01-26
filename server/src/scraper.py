@@ -22,6 +22,7 @@ class Scraper:
             hours=1
         )  # Duration for which the cache is valid
         requests_cache.install_cache("stock_cache", expire_after=self.cache_duration)
+        self.start_browser()
 
     def start_browser(self):
         self.playwright = sync_playwright().start()
@@ -32,14 +33,6 @@ class Scraper:
         if self.browser:
             self.browser.close()
             self.playwright.stop()
-
-    def _fetch_dynamic_html(self):
-        if not self.page:  # If page is not initialized, start the browser
-            self.start_browser()
-
-        self.page.goto(self.url)
-        content = self.page.content()
-        return content
 
     def _get_card_containers(self, soup):
         heading = soup.find(
@@ -88,15 +81,27 @@ class Scraper:
         levels = {1: 10, 2: 20, 3: 30, 4: 50, 5: 100}
         self.page.locator(".multiselect__select").first.click()
         self.page.locator(f"li:nth-child({level}) > .multiselect__option").first.click()
-        logging.info(f"Dropdown value set to {levels[level]} results per page")
+        logging.debug(f"Dropdown value set to {levels[level]} results per page")
 
-    def fetch_stocks(self, html):
+    def get_max_pages(self):
+        li_elements = self.page.locator("ul.pagination li")
+        second_last_li = li_elements.nth(-2)
+        return int(second_last_li.inner_text().strip())
+
+    def fetch_stocks(self):
+        self.page.goto(self.url)
+        self.get_max_pages()
+
         results = []
-        i = 1
+        page = 1
 
         self.set_dropdown_value(5)
+        max_pages = self.get_max_pages()
         next_button = self.page.get_by_label("Go to next page")
+        logging.info("Fetching Stocks...")
         while next_button:
+            self.page.wait_for_selector('text="Search Result"')
+            html = self.page.content()
             soup = BeautifulSoup(html, "html.parser")
             card_containers = self._get_card_containers(soup)
 
@@ -108,20 +113,23 @@ class Scraper:
                     results.append(
                         {"url": actual_url, "symbol": symbol, "id": stock_id}
                     )
-            logging.info(f"Results fetched for page [{i}]")
+            self.print_progress(page, max_pages, "Scraping Pages")
 
             next_button = self.page.get_by_label("Go to next page")
             if next_button and next_button.is_disabled():
-                logging.info(f"The 'next' button is disabled, [{i}] was the last page.")
+                logging.debug(
+                    f"The 'next' button is disabled, [{page}] was the last page."
+                )
                 break
             else:
                 # press the button
                 next_button.click()
-                self.page.wait_for_selector('text="Search Result"')
-                html = self.page.content()
-                i += 1
+                page += 1
 
+        print()
         logging.info(f"{len(results)} Stocks found!")
+        results = self.fetch_reports(results)
+        self.close_browser()
         return results
 
     def fetch_reports(self, stocks):
@@ -148,19 +156,17 @@ class Scraper:
                 except Exception as e:
                     logging.error(f"An error occurred: {e}")
 
-            # Update progress
-            self.print_progress(completed, total_stocks)
+                self.print_progress(completed, total_stocks, "Fetching Reports")
 
         print()
         logging.info("All reports fetched.")
         return results
 
-    def print_progress(self, completed, total):
+    def print_progress(self, completed, total, message):
         """Prints the progress of a task."""
-        progress = (completed / total) * 100
         current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(
-            f"{current_time} - INFO - Fetching Reports: {progress:.2f}% ({completed}/{total})",
+            f"{current_time} - INFO - {message}: ({completed}/{total})",
             end="\r",
             flush=True,
         )
