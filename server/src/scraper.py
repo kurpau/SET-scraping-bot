@@ -12,9 +12,7 @@ from playwright.sync_api import sync_playwright
 
 
 class Scraper:
-    def __init__(self, url, eps_limit):
-        self.url = url
-        self.limit = eps_limit
+    def __init__(self):
         self.playwright = None
         self.browser = None
         self.page = None
@@ -86,9 +84,9 @@ class Scraper:
         second_last_li = li_elements.nth(-2)
         return int(second_last_li.inner_text().strip())
 
-    def fetch_stocks(self):
+    def fetch_stocks(self, url):
         self.start_browser()
-        self.page.goto(self.url)
+        self.page.goto(url)
         self.get_max_pages()
 
         results = []
