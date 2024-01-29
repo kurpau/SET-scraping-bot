@@ -23,7 +23,7 @@ class Scraper:
 
     def start_browser(self):
         self.playwright = sync_playwright().start()
-        self.browser = self.playwright.webkit.launch(headless=False)
+        self.browser = self.playwright.webkit.launch()
         self.page = self.browser.new_page()
 
     def close_browser(self):
@@ -144,10 +144,11 @@ class Scraper:
                 data = future.result()
                 if data is not None:
                     eps = self.getEPS(data)
-                    stock_name = self.getName(data)
-                    stock["stock_name"] = stock_name
-                    stock["eps"] = eps
-                    results.append(stock)
+                    if eps is not None:
+                        stock_name = self.getName(data)
+                        stock["name"] = stock_name
+                        stock["eps"] = eps
+                        results.append(stock)
 
                 self.print_progress(completed, total_stocks, "Fetching Reports")
 
