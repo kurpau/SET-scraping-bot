@@ -2,15 +2,16 @@
   <table>
     <thead>
       <tr>
-        <th scope="col">TICKER</th>
-        <th scope="col">EPS</th>
-        <th></th>
+        <th>TICKER</th>
+        <th>EPS</th>
+        <th>FULL NAME</th>
       </tr>
     </thead>
     <tbody>
       <tr v-for="stock in stocks" :key="stock.id">
         <td>{{ stock.symbol }}</td>
         <td>{{ stock.eps }}</td>
+        <td>{{ stock.name }}</td>
       </tr>
     </tbody>
   </table>

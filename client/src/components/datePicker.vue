@@ -1,28 +1,29 @@
 <template>
   <div class="container">
-    <base-button @click="setDateRange('today')">Today</base-button>
-    <base-button @click="setDateRange('5D')">5D</base-button>
-    <base-button @click="setDateRange('1M')">1M</base-button>
-    <base-button @click="setDateRange('3M')">3M</base-button>
-  </div>
-  <div class="date-container">
-    <label for="start">Start date:</label>
-    <input
-      type="date"
-      id="start"
-      v-model="startDate"
-      :max="today"
-      @change="emitDateUpdate"
-    />
-
-    <label for="end">End date:</label>
-    <input
-      type="date"
-      id="end"
-      v-model="endDate"
-      :max="today"
-      @change="emitDateUpdate"
-    />
+    <div class="period-buttons">
+      <base-button @click="setDateRange('today')">Today</base-button>
+      <base-button @click="setDateRange('5D')">5D</base-button>
+      <base-button @click="setDateRange('1M')">1M</base-button>
+      <base-button @click="setDateRange('3M')">3M</base-button>
+    </div>
+    <div>
+      <label for="start">Start date:</label>
+      <input
+        type="date"
+        id="start"
+        v-model="startDate"
+        :max="today"
+        @change="emitDateUpdate"
+      />
+      <label for="end">End date:</label>
+      <input
+        type="date"
+        id="end"
+        v-model="endDate"
+        :max="today"
+        @change="emitDateUpdate"
+      />
+    </div>
   </div>
 </template>
 
@@ -72,7 +73,14 @@ function emitDateUpdate() {
 
 <style scoped>
 .container {
-  gap: 10px;
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.period-buttons {
+  display: flex;
+  gap: 10px;
 }
 </style>
