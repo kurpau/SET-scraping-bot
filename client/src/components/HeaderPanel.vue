@@ -1,7 +1,11 @@
 <template>
   <base-card>
-    <date-picker @update-dates="handleDateUpdate"></date-picker>
-    <base-button @click="fetchStocks">Fetch Stocks</base-button>
+    <div class="container">
+      <date-picker @update-dates="handleDateUpdate"></date-picker>
+      <base-button id="fetch-button" @click="fetchStocks"
+        >Fetch Stocks</base-button
+      >
+    </div>
   </base-card>
 </template>
 
@@ -11,8 +15,8 @@ import DatePicker from "./DatePicker.vue";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
+const emit = defineEmits(["fetchStocks"]);
 const router = useRouter();
-const stocks = ref([]);
 const startDate = ref("");
 const endDate = ref("");
 
@@ -23,10 +27,18 @@ function handleDateUpdate({ start, end }) {
 }
 
 async function fetchStocks() {
-  // Use the reactive start and end dates directly
   const path = `http://localhost:5000/stocks?from=${startDate.value}&to=${endDate.value}`;
   const res = await fetch(path);
   const data = await res.json();
-  stocks.value = [...data.stocks];
+
+  emit("fetchStocks", [...data.stocks]);
 }
 </script>
+
+<style scoped>
+#fetch-button {
+  display: block;
+  margin-left: auto;
+  margin-right: 0;
+}
+</style>

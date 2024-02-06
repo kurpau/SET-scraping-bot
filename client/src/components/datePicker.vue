@@ -6,23 +6,29 @@
       <base-button @click="setDateRange('1M')">1M</base-button>
       <base-button @click="setDateRange('3M')">3M</base-button>
     </div>
-    <div>
-      <label for="start">Start date:</label>
-      <input
-        type="date"
-        id="start"
-        v-model="startDate"
-        :max="today"
-        @change="emitDateUpdate"
-      />
-      <label for="end">End date:</label>
-      <input
-        type="date"
-        id="end"
-        v-model="endDate"
-        :max="today"
-        @change="emitDateUpdate"
-      />
+    <div class="date-picker">
+      <div class="input-container">
+        <label for="start" class="date-label">Start Date</label>
+        <input
+          type="date"
+          id="start"
+          class="date-input"
+          v-model="startDate"
+          :max="today"
+          @change="emitDateUpdate"
+        />
+      </div>
+      <div class="input-container">
+        <label for="end" class="date-label">End Date</label>
+        <input
+          type="date"
+          id="end"
+          class="date-input"
+          v-model="endDate"
+          :max="today"
+          @change="emitDateUpdate"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -82,5 +88,47 @@ function emitDateUpdate() {
 .period-buttons {
   display: flex;
   gap: 10px;
+}
+
+.date-picker {
+  display: flex;
+  justify-content: space-between;
+}
+
+.input-container {
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  margin: 5px;
+  min-width: 180px;
+  background-color: #f1f2f3;
+}
+
+.date-label {
+  font-size: 10px;
+  color: #333333;
+}
+
+.date-input {
+  border: none;
+  font-size: 16px;
+  background-color: #f1f2f3;
+  cursor: pointer;
+}
+
+.date-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.5);
+}
+
+@media (max-width: 768px) {
+  .date-picker {
+    flex-direction: column;
+  }
+  .input-container {
+    width: 100%;
+  }
 }
 </style>

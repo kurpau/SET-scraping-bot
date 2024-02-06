@@ -19,6 +19,5 @@
 
 <script setup>
 // import StockItem from "./StockItem.vue";
-
 defineProps(["stocks"]);
 </script>
