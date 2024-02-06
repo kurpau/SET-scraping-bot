@@ -1,9 +1,15 @@
 <template>
-  <button class="button-4" role="button"><slot></slot></button>
+  <button class="default" :class="mode" role="button">
+    <slot></slot>
+  </button>
 </template>
 
+<script setup>
+const props = defineProps(["mode"]);
+</script>
+
 <style scoped>
-.button-4 {
+.default {
   appearance: none;
   background-color: #fafbfc;
   border: 1px solid rgba(27, 31, 35, 0.15);
@@ -32,34 +38,38 @@
   word-wrap: break-word;
 }
 
-.button-4:hover {
+.selected {
+  border: 10px solid red;
+}
+
+.default:hover {
   background-color: #f3f4f6;
   text-decoration: none;
   transition-duration: 0.1s;
 }
 
-.button-4:disabled {
+.default:disabled {
   background-color: #fafbfc;
   border-color: rgba(27, 31, 35, 0.15);
   color: #959da5;
   cursor: default;
 }
 
-.button-4:active {
+.default:active {
   background-color: #edeff2;
   box-shadow: rgba(225, 228, 232, 0.2) 0 1px 0 inset;
   transition: none 0s;
 }
 
-.button-4:focus {
+.default:focus {
   outline: 1px transparent;
 }
 
-.button-4:before {
+.default:before {
   display: none;
 }
 
-.button-4:-webkit-details-marker {
+.default:-webkit-details-marker {
   display: none;
 }
 </style>
