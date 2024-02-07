@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-const props = defineProps(["mode"]);
+defineProps(["mode"]);
 </script>
 
 <style scoped>
@@ -39,7 +39,9 @@ const props = defineProps(["mode"]);
 }
 
 .selected {
-  border: 10px solid red;
+  background-color: #edeff2;
+  box-shadow: rgba(225, 228, 232, 0.2) 0 1px 0 inset;
+  transition: none 0s;
 }
 
 .default:hover {

@@ -8,8 +8,8 @@ import { ref } from "vue";
 import HeaderPanel from "../components/HeaderPanel.vue";
 import StockList from "../components/StockList.vue";
 
-let stocks = ref();
+const stocks = ref();
 function updateStocks(event) {
-  stocks.value = event;
+    stocks.value = event;
 }
 </script>
