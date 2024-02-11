@@ -29,9 +29,7 @@ const route = useRoute();
 const emit = defineEmits(["update-dates"]);
 const activeRange = ref("");
 
-function formatDate(date) {
-    return date.toISOString().substring(0, 10);
-}
+const formatDate = (date) => date.toISOString().substring(0, 10);
 
 const today = formatDate(new Date());
 const startDate = ref(route.query.fromDate || today);
@@ -39,11 +37,15 @@ const endDate = ref(route.query.toDate || today);
 
 function setDateRange(period) {
     activeRange.value = period;
-    const start = calculateStartDate(period); // Abstract date calculation
+    const start = calculateStartDate(period);
 
     startDate.value = formatDate(start);
     endDate.value = period === "today" ? startDate.value : formatDate(new Date());
     emitDateUpdate();
+}
+
+function emitDateUpdate() {
+    emit("update-dates", { start: startDate.value, end: endDate.value });
 }
 
 function calculateStartDate(period) {
@@ -62,16 +64,12 @@ function calculateStartDate(period) {
     }
 }
 
-function emitDateUpdate() {
-    emit("update-dates", { start: startDate.value, end: endDate.value });
-}
 
 function determineActiveRange() {
     const start = new Date(startDate.value);
     const end = new Date(endDate.value);
     const todayDate = new Date(today);
 
-    // Calculate the difference in months and days
     const monthDiff = (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth();
     const dayDiff = end.getDate() - start.getDate();
 
@@ -84,7 +82,7 @@ function determineActiveRange() {
     } else if (monthDiff === 3 && dayDiff === 0) {
         activeRange.value = "3M";
     } else {
-        activeRange.value = ""; // No predefined range matches
+        activeRange.value = "";
     }
 }
 
