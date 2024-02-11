@@ -1,128 +1,55 @@
 <template>
-  <div class="spinner">
-    <div class="lds-roller">
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-      <div></div>
-    </div>
+  <div class="lds-facebook">
+    <div></div>
+    <div></div>
+    <div></div>
   </div>
 </template>
 
 <style scoped>
-.spinner {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-}
-
-.lds-roller {
+.lds-facebook {
   display: inline-block;
   position: relative;
-  width: 80px;
-  height: 80px;
+  margin-left: auto;
+  margin-right: 0;
+  width: 34px;
+  height: 34px;
 }
 
-.lds-roller div {
-  animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-  transform-origin: 40px 40px;
-}
-
-.lds-roller div:after {
-  content: ' ';
-  display: block;
+.lds-facebook div {
+  display: inline-block;
   position: absolute;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #3d008d;
-  margin: -4px 0 0 -4px;
+  left: 2px;
+  width: 6px;
+  background: #000;
+  animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
 }
 
-.lds-roller div:nth-child(1) {
-  animation-delay: -0.036s;
+.lds-facebook div:nth-child(1) {
+  left: 2px;
+  animation-delay: -0.24s;
 }
 
-.lds-roller div:nth-child(1):after {
-  top: 63px;
-  left: 63px;
+.lds-facebook div:nth-child(2) {
+  left: 14px;
+  animation-delay: -0.12s;
 }
 
-.lds-roller div:nth-child(2) {
-  animation-delay: -0.072s;
+.lds-facebook div:nth-child(3) {
+  left: 26px;
+  animation-delay: 0;
 }
 
-.lds-roller div:nth-child(2):after {
-  top: 68px;
-  left: 56px;
-}
-
-.lds-roller div:nth-child(3) {
-  animation-delay: -0.108s;
-}
-
-.lds-roller div:nth-child(3):after {
-  top: 71px;
-  left: 48px;
-}
-
-.lds-roller div:nth-child(4) {
-  animation-delay: -0.144s;
-}
-
-.lds-roller div:nth-child(4):after {
-  top: 72px;
-  left: 40px;
-}
-
-.lds-roller div:nth-child(5) {
-  animation-delay: -0.18s;
-}
-
-.lds-roller div:nth-child(5):after {
-  top: 71px;
-  left: 32px;
-}
-
-.lds-roller div:nth-child(6) {
-  animation-delay: -0.216s;
-}
-
-.lds-roller div:nth-child(6):after {
-  top: 68px;
-  left: 24px;
-}
-
-.lds-roller div:nth-child(7) {
-  animation-delay: -0.252s;
-}
-
-.lds-roller div:nth-child(7):after {
-  top: 63px;
-  left: 17px;
-}
-
-.lds-roller div:nth-child(8) {
-  animation-delay: -0.288s;
-}
-
-.lds-roller div:nth-child(8):after {
-  top: 56px;
-  left: 12px;
-}
-
-@keyframes lds-roller {
+@keyframes lds-facebook {
   0% {
-    transform: rotate(0deg);
+    top: 2px;
+    height: 30px;
   }
 
+  50%,
   100% {
-    transform: rotate(360deg);
+    top: 10px;
+    height: 14px;
   }
 }
 </style>

@@ -2,7 +2,10 @@
   <base-card>
     <div class="container">
       <date-picker @update-dates="handleDateUpdate"></date-picker>
-      <base-button id="fetch-button" @click="fetchStocks">Fetch Stocks</base-button>
+      <div class='fetch'>
+        <base-spinner></base-spinner>
+        <base-button id="fetch-button" @click="fetchStocks">Fetch Stocks</base-button>
+      </div>
     </div>
   </base-card>
 </template>
@@ -35,8 +38,15 @@ async function fetchStocks() {
 
 <style scoped>
 #fetch-button {
-  display: block;
+  display: inline-block;
+}
+
+.fetch {
+  display: flex;
+  gap: 10px;
   margin-left: auto;
   margin-right: 0;
+  justify-content: flex-end;
+  align-items: center;
 }
 </style>
