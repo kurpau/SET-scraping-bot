@@ -10,8 +10,6 @@
 .lds-facebook {
   display: inline-block;
   position: relative;
-  margin-left: auto;
-  margin-right: 0;
   width: 34px;
   height: 34px;
 }

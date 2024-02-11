@@ -3,7 +3,6 @@
     <div class="container">
       <date-picker @update-dates="handleDateUpdate"></date-picker>
       <div class='fetch'>
-        <base-spinner></base-spinner>
         <base-button id="fetch-button" @click="fetchStocks">Fetch Stocks</base-button>
       </div>
     </div>
@@ -13,27 +12,38 @@
 <script setup>
 import DatePicker from "./DatePicker.vue";
 
-import { ref } from "vue";
+import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
-const emit = defineEmits(["fetchStocks"]);
+const emit = defineEmits(["fetchStocks", "updateLoading"]);
+const isLoading = ref(false);
 const router = useRouter();
 const startDate = ref("");
 const endDate = ref("");
 
 function handleDateUpdate({ start, end }) {
-    startDate.value = start;
-    endDate.value = end;
-    router.push({ path: "/", query: { fromDate: start, toDate: end } });
+  startDate.value = start;
+  endDate.value = end;
+  router.push({ path: "/", query: { fromDate: start, toDate: end } });
 }
 
 async function fetchStocks() {
+  isLoading.value = true;
+  try {
     const path = `http://localhost:5000/stocks?from=${startDate.value}&to=${endDate.value}`;
     const res = await fetch(path);
     const data = await res.json();
-
+    await new Promise(resolve => setTimeout(resolve, 3000));
     emit("fetchStocks", [...data.stocks]);
+  } catch (error) {
+    console.log("Something went wrong!", error);
+  }
+  isLoading.value = false;
 }
+
+watch(isLoading, (newLoadingState) => {
+  emit("updateLoading", newLoadingState);
+});
 </script>
 
 <style scoped>

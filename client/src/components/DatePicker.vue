@@ -36,58 +36,58 @@ const startDate = ref(route.query.fromDate || today);
 const endDate = ref(route.query.toDate || today);
 
 function setDateRange(period) {
-    activeRange.value = period;
-    const start = calculateStartDate(period);
+  activeRange.value = period;
+  const start = calculateStartDate(period);
 
-    startDate.value = formatDate(start);
-    endDate.value = period === "today" ? startDate.value : formatDate(new Date());
-    emitDateUpdate();
+  startDate.value = formatDate(start);
+  endDate.value = period === "today" ? startDate.value : formatDate(new Date());
+  emitDateUpdate();
 }
 
 function emitDateUpdate() {
-    emit("update-dates", { start: startDate.value, end: endDate.value });
+  emit("update-dates", { start: startDate.value, end: endDate.value });
 }
 
 function calculateStartDate(period) {
-    const today = new Date();
-    switch (period) {
-    case "today":
-        return today;
-    case "5D":
-        return new Date(today.setDate(today.getDate() - 5));
-    case "1M":
-        return new Date(today.setMonth(today.getMonth() - 1));
-    case "3M":
-        return new Date(today.setMonth(today.getMonth() - 3));
-    default:
-        throw new Error(`Unknown period: ${period}`);
-    }
+  const today = new Date();
+  switch (period) {
+  case "today":
+    return today;
+  case "5D":
+    return new Date(today.setDate(today.getDate() - 5));
+  case "1M":
+    return new Date(today.setMonth(today.getMonth() - 1));
+  case "3M":
+    return new Date(today.setMonth(today.getMonth() - 3));
+  default:
+    throw new Error(`Unknown period: ${period}`);
+  }
 }
 
 
 function determineActiveRange() {
-    const start = new Date(startDate.value);
-    const end = new Date(endDate.value);
-    const todayDate = new Date(today);
+  const start = new Date(startDate.value);
+  const end = new Date(endDate.value);
+  const todayDate = new Date(today);
 
-    const monthDiff = (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth();
-    const dayDiff = end.getDate() - start.getDate();
+  const monthDiff = (end.getFullYear() - start.getFullYear()) * 12 + end.getMonth() - start.getMonth();
+  const dayDiff = end.getDate() - start.getDate();
 
-    if (formatDate(start) === formatDate(todayDate) && formatDate(end) === formatDate(todayDate)) {
-        activeRange.value = "today";
-    } else if (Math.round((end - start) / (1000 * 60 * 60 * 24)) <= 5 && formatDate(end) === formatDate(todayDate)) {
-        activeRange.value = "5D";
-    } else if (monthDiff === 1 && dayDiff === 0) {
-        activeRange.value = "1M";
-    } else if (monthDiff === 3 && dayDiff === 0) {
-        activeRange.value = "3M";
-    } else {
-        activeRange.value = "";
-    }
+  if (formatDate(start) === formatDate(todayDate) && formatDate(end) === formatDate(todayDate)) {
+    activeRange.value = "today";
+  } else if (Math.round((end - start) / (1000 * 60 * 60 * 24)) <= 5 && formatDate(end) === formatDate(todayDate)) {
+    activeRange.value = "5D";
+  } else if (monthDiff === 1 && dayDiff === 0) {
+    activeRange.value = "1M";
+  } else if (monthDiff === 3 && dayDiff === 0) {
+    activeRange.value = "3M";
+  } else {
+    activeRange.value = "";
+  }
 }
 
 watch([startDate, endDate], () => {
-    determineActiveRange();
+  determineActiveRange();
 }, { immediate: true });
 </script>
 

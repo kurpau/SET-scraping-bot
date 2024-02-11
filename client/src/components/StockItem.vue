@@ -1,20 +1,18 @@
 <template>
-  <h1>Hellooo</h1>
-  <table>
-    <thead>
-      <tr>
-        <th scope="col">Title</th>
-        <th scope="col">Author</th>
-        <th scope="col">Read?</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>foo</td>
-        <td>bar</td>
-        <td>foobar</td>
-      </tr>
-    </tbody>
-  </table>
+  <tr>
+    <td data-label="Name"> {{ stock.name }}</td>
+    <td data-label="Tikcer">{{ stock.symbol }}</td>
+    <td data-label="EPScurr">{{ stock.eps[0] }}</td>
+    <td data-label="EPSprev">{{ stock.eps[1] }}</td>
+  </tr>
 </template>
+
+<script setup>
+defineProps(["stock"]);
+</script>
+
+<style scoped>
+td {
+  text-align: center;
+}
+</style>
