@@ -30,7 +30,7 @@ def construct_url(from_date, to_date):
 class Main:
     def __init__(self, url=None, eps_limit=0.02):
         self.url = url
-        self.scraper = Scraper(url, eps_limit)
+        self.scraper = Scraper()
 
         if getattr(sys, "frozen", False):
             application_path = os.path.dirname(sys.executable)
@@ -54,7 +54,7 @@ class Main:
         stocks_meeting_criteria = 0
 
         try:
-            stock_data = self.scraper.fetch_stocks()
+            stock_data = self.scraper.fetch_stocks(self.url)
 
             for stock in stock_data:
                 stock_name = stock.get("stock_name")
@@ -77,7 +77,8 @@ class Main:
                 logging.warning("No stocks met the criteria. The output file is empty.")
             else:
                 logging.info(
-                    f'Process finished. {stocks_meeting_criteria} stocks meet the criteria. Check the "result.txt" file.'
+                    f'Process finished. {
+                        stocks_meeting_criteria} stocks meet the criteria. Check the "result.txt" file.'
                 )
 
             input("Press Enter to continue...")

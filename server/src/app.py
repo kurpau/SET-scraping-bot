@@ -1,9 +1,10 @@
-from flask import Flask, jsonify, request
 import urllib.parse
-from scraper import Scraper
 from datetime import datetime
+
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+from scraper import Scraper
 
 app = Flask(__name__)
 

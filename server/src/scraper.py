@@ -30,14 +30,12 @@ class Scraper:
         self.browser.close()
         self.playwright.stop()
 
-    def _get_card_containers(self, soup):
+    def _get_card_containers(self, soup, url):
         heading = soup.find(
             "span", string=lambda t: t is not None and "Search Result" in t.strip()
         )
         if not heading:
-            logging.error(
-                f"No search results found. Check this URL to confirm: {self.url}"
-            )
+            logging.error(f"No search results found. Check this URL to confirm: {url}")
             exit(1)
 
         parent_div = heading.find_parent("div", class_="mb-5")
@@ -67,11 +65,33 @@ class Scraper:
         symbol = symbol_element.text.strip()
         actual_url += f"&symbol={symbol}"
 
+        report_date = self._extract_date_and_time(container)
+
         return (
             actual_url,
             symbol,
             stock_id,
+            report_date,
         )
+
+    def _extract_date_and_time(self, container):
+        span_elements = container.find_all(
+            "div", attrs={"class": "d-flex align-items-center"}
+        )
+
+        date_text = span_elements[0].find("span").text.strip()
+        time_text = span_elements[0].find_all("span")[1].text.strip()
+
+        if date_text == "Today News":
+            date_text = datetime.datetime.now().strftime("%d %b %Y")
+
+        date_time_str = f"{date_text} {time_text}"
+
+        format = "%d %b %Y %H:%M"
+
+        date_time_obj = datetime.datetime.strptime(date_time_str, format)
+
+        return date_time_obj
 
     def set_dropdown_value(self, level):
         levels = {1: 10, 2: 20, 3: 30, 4: 50, 5: 100}
@@ -100,15 +120,22 @@ class Scraper:
             self.page.wait_for_selector('text="Search Result"')
             html = self.page.content()
             soup = BeautifulSoup(html, "html.parser")
-            card_containers = self._get_card_containers(soup)
+            card_containers = self._get_card_containers(soup, url)
 
             next_button = self.page.get_by_label("Go to next page")
 
             for container in card_containers:
-                actual_url, symbol, stock_id = self._extract_params(container)
+                actual_url, symbol, stock_id, report_date = self._extract_params(
+                    container
+                )
                 if actual_url and symbol:
                     results.append(
-                        {"url": actual_url, "symbol": symbol, "id": stock_id}
+                        {
+                            "url": actual_url,
+                            "symbol": symbol,
+                            "id": stock_id,
+                            "date": report_date,
+                        }
                     )
             self.print_progress(page, max_pages, "Scraping Pages")
 
