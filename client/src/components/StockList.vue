@@ -8,11 +8,7 @@
         <caption>
           Fetch Results
         </caption>
-        <stock-item
-          v-for="stock in stocks"
-          :key="stock.id"
-          :stock="stock"
-        ></stock-item>
+        <stock-item v-for="stock in stocks" :key="stock.id" :stock="stock"></stock-item>
       </div>
       <div class="info" v-else>
         <p>
@@ -45,6 +41,6 @@ defineProps(["stocks", "isLoading"]);
 caption {
   font-size: 1.5em;
   font-weight: 800;
-  margin-top: 1rem;
+  margin-top: 0.5rem auto;
 }
 </style>
