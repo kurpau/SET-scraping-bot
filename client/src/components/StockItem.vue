@@ -8,31 +8,24 @@
     </div>
     <hr />
     <div class="details">
-      <div>
-        <div data-label="Date">{{ parsedDate }}</div>
-      </div>
+      <div data-label="Date">{{ parsedDate }}</div>
       <div class="eps">
         <div class="period">
           <div class="labeled">
-            <label>Current</label>
+            <p>Current</p>
             <span data-label="EPScurr">{{ stock.eps[0].toFixed(2) }}</span>
           </div>
           <div class="labeled">
-            <label>Previous</label>
+            <p>Previous</p>
             <span data-label="EPSprev">{{ stock.eps[1].toFixed(2) }}</span>
           </div>
         </div>
         <div class="change">
           <div class="labeled">
-            <label>Growth</label>
+            <p>Growth</p>
             <div>
-              <span :class="{ 'eps-green': epsChange > 0, 'eps-red': epsChange < 0 }">{{ epsChange.toFixed(2) }}</span>
-              <span v-if="epsChange > 0" class="material-symbols-outlined">
-                arrow_upward
-              </span>
-              <span v-else class="material-symbols-outlined">
-                arrow_downward
-              </span>
+              <span :class="{ 'eps-green': epsChange > 0, 'eps-red': epsChange < 0 }">{{
+                epsChange.toFixed(2) }}</span>
             </div>
           </div>
         </div>
@@ -67,7 +60,7 @@ const parsedDate = computed(() => {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
   padding: 1rem;
-  margin: 0.8rem auto;
+  margin: 0.5rem auto;
   width: 100%;
 }
 
@@ -116,6 +109,10 @@ a:hover {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.labeled p {
+  margin: 0;
 }
 
 .labeled div {
