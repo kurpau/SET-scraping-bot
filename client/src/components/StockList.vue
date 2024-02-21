@@ -5,10 +5,25 @@
     </div>
     <div v-else>
       <div class="results" v-if="stocks">
-        <caption>
-          Fetch Results
-        </caption>
-        <stock-item v-for="stock in stocks" :key="stock.id" :stock="stock"></stock-item>
+        <div class='header'>
+          <caption>
+            Fetch Results
+          </caption>
+          <div class='controls'></div>
+          <button @click="sort('asc')" :class="{ selected: sorting === 'asc' }">
+            Sort Ascending
+          </button>
+          <button @click="sort('desc')" :class="{ selected: sorting === 'desc' }">
+            Sort Descending
+          </button>
+          <input type='number' step="0.01" v-model="epsFilter" placeholder="Filter by EPS" />
+          <input type='text' v-model="activeSearchTerm" placeholder="Filter by Name" />
+          <br>
+          filter by eps <br>
+          no negative eps check <br>
+        </div>
+        <hr>
+        <stock-item v-for="stock in displayedStocks" :key="stock.id" :stock="stock"></stock-item>
       </div>
       <div class="info" v-else>
         <p>
@@ -22,7 +37,46 @@
 
 <script setup>
 import StockItem from "./StockItem.vue";
-defineProps(["stocks", "isLoading"]);
+import { ref, computed } from "vue";
+const props = defineProps(["fetchedStocks", "isLoading"]);
+
+const sorting = ref(null);
+const stocks = computed(() => props.fetchedStocks);
+const epsFilter = ref();
+const activeSearchTerm = ref("");
+
+function sort(mode) {
+  sorting.value = mode;
+}
+
+const displayedStocks = computed(() => {
+  let modifiedStocks = stocks.value;
+
+  modifiedStocks = modifiedStocks.sort((i1, i2) => {
+    const i1Growth = i1.eps[0] - i1.eps[1];
+    const i2Growth = i2.eps[0] - i2.eps[1];
+    if (sorting.value === "asc") {
+      return i1Growth - i2Growth;
+    } else if (sorting.value === "desc") {
+      return i2Growth - i1Growth;
+    }
+  });
+
+  if (epsFilter.value !== "") {
+    modifiedStocks = modifiedStocks.filter((stock) => {
+      if (stock.eps[0] - stock.eps[1] >= epsFilter.value) return true;
+    });
+  }
+
+  if (activeSearchTerm.value !== "") {
+    modifiedStocks = modifiedStocks.filter((stock) =>
+      stock.name.toLowerCase().includes(activeSearchTerm.value.toLowerCase()) || stock.symbol.toLowerCase().includes(activeSearchTerm.value.toLowerCase())
+    );
+  }
+
+  return modifiedStocks;
+});
+
 </script>
 
 <style scoped>
@@ -38,9 +92,18 @@ defineProps(["stocks", "isLoading"]);
   justify-items: center;
 }
 
+.header {
+  margin: 0 auto;
+}
+
+hr {
+  width: 100%
+}
+
 caption {
   font-size: 1.5em;
   font-weight: 800;
-  margin-top: 0.5rem auto;
+  margin: 0.5rem auto;
+  white-space: nowrap;
 }
 </style>

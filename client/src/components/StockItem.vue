@@ -2,7 +2,7 @@
   <div class="container">
     <div class="header">
       <div data-label="Name">
-        <a :href="stock.url">{{ stock.name }}</a>
+        <a target=”_blank” :href="stock.url">{{ stock.name }}</a>
       </div>
       <div data-label="Tikcer">{{ stock.symbol }}</div>
     </div>

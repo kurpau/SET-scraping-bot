@@ -1,6 +1,6 @@
 <template>
   <header-panel @updateLoading="setLoadingState" @fetchStocks="updateStocks"></header-panel>
-  <stock-list :isLoading="isLoading" :stocks="stocks"></stock-list>
+  <stock-list :isLoading="isLoading" :fetchedStocks="stocks"></stock-list>
 </template>
 
 <script setup>
