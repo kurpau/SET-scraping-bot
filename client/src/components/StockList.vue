@@ -10,17 +10,17 @@
             Fetch Results
           </caption>
           <div class='controls'></div>
-          <button @click="sort('asc')" :class="{ selected: sorting === 'asc' }">
+          <base-button @click="sort('asc')" :class="{ selected: sorting === 'asc' }">
             Sort Ascending
-          </button>
-          <button @click="sort('desc')" :class="{ selected: sorting === 'desc' }">
+          </base-button>
+          <base-button @click="sort('desc')" :class="{ selected: sorting === 'desc' }">
             Sort Descending
-          </button>
+          </base-button>
           <input type='number' step="0.01" v-model="epsFilter" placeholder="Filter by EPS" />
           <input type='text' v-model="activeSearchTerm" placeholder="Filter by Name" />
           <br>
-          filter by eps <br>
-          no negative eps check <br>
+          <label>Only positive EPS</label>
+          <input type="checkbox">
         </div>
         <hr>
         <stock-item v-for="stock in displayedStocks" :key="stock.id" :stock="stock"></stock-item>

@@ -1,12 +1,8 @@
 <template>
-  <button class="default" :class="mode" role="button">
+  <button class="default">
     <slot></slot>
   </button>
 </template>
-
-<script setup>
-defineProps(["mode"]);
-</script>
 
 <style scoped>
 .default {
