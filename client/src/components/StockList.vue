@@ -20,7 +20,7 @@
           <input type='text' v-model="activeSearchTerm" placeholder="Filter by Name" />
           <br>
           <label>Only positive EPS</label>
-          <input type="checkbox">
+          <input type="checkbox" v-model="onlyPositive">
         </div>
         <hr>
         <stock-item v-for="stock in displayedStocks" :key="stock.id" :stock="stock"></stock-item>
@@ -44,6 +44,7 @@ const sorting = ref(null);
 const stocks = computed(() => props.fetchedStocks);
 const epsFilter = ref();
 const activeSearchTerm = ref("");
+const onlyPositive = ref(false);
 
 function sort(mode) {
   sorting.value = mode;
@@ -63,14 +64,18 @@ const displayedStocks = computed(() => {
   });
 
   if (epsFilter.value !== "") {
-    modifiedStocks = modifiedStocks.filter((stock) => {
-      if (stock.eps[0] - stock.eps[1] >= epsFilter.value) return true;
-    });
+    modifiedStocks = modifiedStocks.filter((stock) => (stock.eps[0] - stock.eps[1]) >= epsFilter.value);
   }
 
   if (activeSearchTerm.value !== "") {
     modifiedStocks = modifiedStocks.filter((stock) =>
       stock.name.toLowerCase().includes(activeSearchTerm.value.toLowerCase()) || stock.symbol.toLowerCase().includes(activeSearchTerm.value.toLowerCase())
+    );
+  }
+
+  if (onlyPositive.value) {
+    modifiedStocks = modifiedStocks.filter((stock) =>
+      stock.eps[0] >= 0 && stock.eps[1] >= 0
     );
   }
 
