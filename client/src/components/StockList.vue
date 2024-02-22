@@ -1,7 +1,6 @@
 <template>
   <base-card>
     <!-- TODO -->
-    <!-- add refresh warning -->
     <!-- normalize colors <br> -->
     <!-- normalize fonts <br> -->
     <!-- make error dialog/window -->
@@ -64,19 +63,23 @@ import StockItem from "./StockItem.vue";
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 const props = defineProps(["fetchedStocks", "isLoading"]);
 
+
+
+const stocks = ref([]);
 const sorting = ref("desc");
-const stocks = computed(() => props.fetchedStocks);
 const epsFilter = ref("");
 const activeSearchTerm = ref("");
 const onlyPositive = ref(false);
 const sortBy = ref("date");
+
+
 
 function sort(mode) {
   sorting.value = mode;
 }
 
 const displayedStocks = computed(() => {
-  let modifiedStocks = [...stocks.value];
+  let modifiedStocks = props.fetchedStocks && props.fetchedStocks.length > 0 ? props.fetchedStocks : JSON.parse(localStorage.getItem("stocksData") || "[]");
 
   modifiedStocks = modifiedStocks.sort((i1, i2) => {
     if (sortBy.value === "growth") {
@@ -113,21 +116,6 @@ const displayedStocks = computed(() => {
   }
 
   return modifiedStocks;
-});
-
-const handleBeforeUnload = (event) => {
-  if (stocks.value) {
-    event.preventDefault();
-    return "";
-  }
-};
-
-onMounted(() => {
-  window.addEventListener("beforeunload", handleBeforeUnload);
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener("beforeunload", handleBeforeUnload);
 });
 
 </script>

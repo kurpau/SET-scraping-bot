@@ -33,10 +33,10 @@ async function fetchStocks() {
     const path = `http://localhost:5000/stocks?from=${startDate.value}&to=${endDate.value}`;
     const res = await fetch(path);
     const data = await res.json();
-    await new Promise(resolve => setTimeout(resolve, 3000));
     emit("fetchStocks", [...data.stocks]);
+    localStorage.setItem("stocksData", JSON.stringify(data.stocks));
   } catch (error) {
-    console.log("Something went wrong!", error);
+    console.error("Something went wrong!", error);
   }
   isLoading.value = false;
 }
