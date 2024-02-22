@@ -4,15 +4,15 @@
     <!-- make error dialog/window -->
     <!-- preserve header option state after refresh -->
     <!-- make responsive for mobile -->
+    <!-- default prop value for stocks?  -->
     <!-- remember to handle errors in backend -->
-    <!-- what happens if I press fetch stocks multiple times in a short period -->
     <!-- check for duplicate stocks because of SET pagination.... -->
     <!-- commnent the code -->
     <div class="info" v-if="isLoading">
       <base-spinner></base-spinner>
     </div>
     <div v-else>
-      <div class="results" v-if="displayedStocks">
+      <div class="results" v-if="displayedStocks.length !== 0">
         <div class='header'>
           <div>
             <caption>
