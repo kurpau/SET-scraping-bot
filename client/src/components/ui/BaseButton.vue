@@ -1,5 +1,5 @@
 <template>
-  <button class="default">
+  <button class="default" role="button">
     <slot></slot>
   </button>
 </template>
@@ -7,19 +7,16 @@
 <style scoped>
 .default {
   appearance: none;
-  background-color: #fafbfc;
+  background-color: var(--color-background);
   border: 1px solid rgba(27, 31, 35, 0.15);
   border-radius: 6px;
-  box-shadow:
-    rgba(27, 31, 35, 0.04) 0 1px 0,
-    rgba(255, 255, 255, 0.25) 0 1px 0 inset;
+  box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset;
   box-sizing: border-box;
-  color: #24292e;
+  color: var(--color-text);
   cursor: pointer;
   display: inline-block;
-  font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial,
-    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  font-size: 16px;
+  font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 14px;
   font-weight: 500;
   line-height: 20px;
   list-style: none;
@@ -34,27 +31,21 @@
   word-wrap: break-word;
 }
 
-.selected {
-  background-color: #edeff2;
-  box-shadow: rgba(225, 228, 232, 0.2) 0 1px 0 inset;
-  transition: none 0s;
-}
-
 .default:hover {
-  background-color: #f3f4f6;
+  background-color: var(--color-background-hover);
   text-decoration: none;
   transition-duration: 0.1s;
 }
 
 .default:disabled {
-  background-color: #fafbfc;
-  border-color: rgba(27, 31, 35, 0.15);
-  color: #959da5;
+  background-color: var(--color-background);
+  border-color: var(--color-border);
+  color: var(--color-text-disabled);
   cursor: default;
 }
 
-.default:active {
-  background-color: #edeff2;
+.selected {
+  background-color: var(--color-background-selected);
   box-shadow: rgba(225, 228, 232, 0.2) 0 1px 0 inset;
   transition: none 0s;
 }

@@ -3,6 +3,7 @@
     <!-- TODO -->
     <!-- normalize colors <br> -->
     <!-- normalize fonts <br> -->
+    <!-- Add name in the header -->
     <!-- make error dialog/window -->
     <!-- make responsive for mobile -->
     <!-- remember to handle errors in backend -->
@@ -166,20 +167,20 @@ caption {
   padding: 5px 12px;
   font-size: 16px;
   line-height: 20px;
-  color: #24292e;
+  color: var(--color-text);
   vertical-align: middle;
-  background-color: #ffffff;
+  background-color: transparent;
   background-repeat: no-repeat;
   background-position: right 8px center;
-  border: 1px solid #e1e4e8;
+  border: 1px solid var(--color-border);
   border-radius: 6px;
   outline: none;
-  box-shadow: rgba(225, 228, 232, 0.2) 0px 1px 0px 0px inset;
 }
 
 .text-input input:focus {
-  border-color: #0366d6;
+  /* prevent shift on focus */
+  padding: 4px 11px;
   outline: none;
-  box-shadow: rgba(3, 102, 214, 0.3) 0px 0px 0px 3px;
+  border: 2px solid var(--color-accent-fg)
 }
 </style>

@@ -128,18 +128,18 @@ watch(
   padding: 5px;
   margin: 5px;
   min-width: 180px;
-  background-color: #f1f2f3;
+  background-color: var(--background-default);
 }
 
 .date-label {
   font-size: 10px;
-  color: #333333;
+  color: var(--color-text);
 }
 
 .date-input {
   border: none;
   font-size: 16px;
-  background-color: #f1f2f3;
+  background-color: var(--background-default);
   cursor: pointer;
 }
 

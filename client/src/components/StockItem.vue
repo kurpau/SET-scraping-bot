@@ -58,7 +58,7 @@ const parsedDate = computed(() => {
 <style scoped>
 .container {
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+  box-shadow: 0 2px 8px var(--card-shadow);
   padding: 1rem;
   margin: 0.5rem auto;
   width: 100%;
@@ -71,13 +71,14 @@ const parsedDate = computed(() => {
 }
 
 a {
-  color: black;
+  color: var(--color-fg-muted);
   text-decoration: none;
   text-transform: uppercase;
 }
 
 a:hover {
   cursor: pointer;
+  color: var(--color-accent-fg);
 }
 
 .details {
