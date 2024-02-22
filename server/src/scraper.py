@@ -110,6 +110,7 @@ class Scraper:
         self.get_max_pages()
 
         results = []
+        seen_stock_ids = set()
         page = 1
 
         self.set_dropdown_value(5)
@@ -122,13 +123,11 @@ class Scraper:
             soup = BeautifulSoup(html, "html.parser")
             card_containers = self._get_card_containers(soup, url)
 
-            next_button = self.page.get_by_label("Go to next page")
-
             for container in card_containers:
                 actual_url, symbol, stock_id, report_date = self._extract_params(
                     container
                 )
-                if actual_url and symbol:
+                if actual_url and symbol and stock_id not in seen_stock_ids:
                     results.append(
                         {
                             "url": actual_url,
@@ -137,6 +136,8 @@ class Scraper:
                             "date": report_date,
                         }
                     )
+                    seen_stock_ids.add(stock_id)
+
             self.print_progress(page, max_pages, "Scraping Pages")
 
             next_button = self.page.get_by_label("Go to next page")
@@ -149,8 +150,7 @@ class Scraper:
                 next_button.click()
                 page += 1
 
-        print()
-        logging.info(f"{len(results)} Stocks found!")
+        logging.info(f"{len(results)} Unique Stocks found!")
         self.close_browser()
         results = self.fetch_reports(results)
         return results
