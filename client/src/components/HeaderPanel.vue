@@ -28,6 +28,7 @@ function handleDateUpdate({ start, end }) {
 }
 
 async function fetchStocks() {
+  console.log("yoo");
   isLoading.value = true;
   try {
     const path = `http://localhost:5000/stocks?from=${startDate.value}&to=${endDate.value}`;
@@ -37,6 +38,7 @@ async function fetchStocks() {
     localStorage.setItem("stocksData", JSON.stringify(data.stocks));
   } catch (error) {
     console.error("Something went wrong!", error);
+    localStorage.removeItem("stocksData");
   }
   isLoading.value = false;
 }

@@ -1,18 +1,18 @@
 <template>
   <base-card>
     <!-- TODO -->
-    <!-- Add name in the header -->
     <!-- make error dialog/window -->
+    <!-- preserve header option state after refresh -->
     <!-- make responsive for mobile -->
     <!-- remember to handle errors in backend -->
     <!-- what happens if I press fetch stocks multiple times in a short period -->
     <!-- check for duplicate stocks because of SET pagination.... -->
-    <!-- remove routing -->
+    <!-- commnent the code -->
     <div class="info" v-if="isLoading">
       <base-spinner></base-spinner>
     </div>
     <div v-else>
-      <div class="results" v-if="stocks">
+      <div class="results" v-if="displayedStocks">
         <div class='header'>
           <div>
             <caption>
@@ -60,12 +60,9 @@
 
 <script setup>
 import StockItem from "./StockItem.vue";
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed } from "vue";
 const props = defineProps(["fetchedStocks", "isLoading"]);
 
-
-
-const stocks = ref([]);
 const sorting = ref("desc");
 const epsFilter = ref("");
 const activeSearchTerm = ref("");
@@ -73,13 +70,12 @@ const onlyPositive = ref(false);
 const sortBy = ref("date");
 
 
-
 function sort(mode) {
   sorting.value = mode;
 }
 
 const displayedStocks = computed(() => {
-  let modifiedStocks = props.fetchedStocks && props.fetchedStocks.length > 0 ? props.fetchedStocks : JSON.parse(localStorage.getItem("stocksData") || "[]");
+  let modifiedStocks = props.fetchedStocks && props.fetchedStocks?.length > 0 ? [...props.fetchedStocks] : JSON.parse(localStorage.getItem("stocksData") || "[]");
 
   modifiedStocks = modifiedStocks.sort((i1, i2) => {
     if (sortBy.value === "growth") {
@@ -141,7 +137,8 @@ const displayedStocks = computed(() => {
 }
 
 hr {
-  width: 100%
+  width: 100%;
+  margin: 20px 0 15px 0;
 }
 
 caption {
