@@ -1,4 +1,5 @@
 <template>
+  <project-card />
   <header-panel @updateLoading="setLoadingState" @fetchStocks="updateStocks"></header-panel>
   <stock-list :isLoading="isLoading" :fetchedStocks="stocks"></stock-list>
 </template>
@@ -7,6 +8,7 @@
 import { ref } from "vue";
 import HeaderPanel from "../components/HeaderPanel.vue";
 import StockList from "../components/StockList.vue";
+import ProjectCard from "../components/ProjectCard.vue";
 
 const stocks = ref();
 

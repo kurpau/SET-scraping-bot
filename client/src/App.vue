@@ -30,4 +30,14 @@ html {
 body {
   margin: 0;
 }
+
+a {
+  color: var(--color-fg-muted);
+  text-decoration: none;
+}
+
+a:hover {
+  cursor: pointer;
+  color: var(--color-accent-fg);
+}
 </style>

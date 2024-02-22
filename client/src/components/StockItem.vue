@@ -70,16 +70,6 @@ const parsedDate = computed(() => {
   justify-content: space-between;
 }
 
-a {
-  color: var(--color-fg-muted);
-  text-decoration: none;
-  text-transform: uppercase;
-}
-
-a:hover {
-  cursor: pointer;
-  color: var(--color-accent-fg);
-}
 
 .details {
   display: flex;

@@ -1,13 +1,12 @@
 <template>
   <base-card>
     <!-- TODO -->
-    <!-- normalize colors <br> -->
-    <!-- normalize fonts <br> -->
     <!-- Add name in the header -->
     <!-- make error dialog/window -->
     <!-- make responsive for mobile -->
     <!-- remember to handle errors in backend -->
     <!-- what happens if I press fetch stocks multiple times in a short period -->
+    <!-- check for duplicate stocks because of SET pagination.... -->
     <!-- remove routing -->
     <div class="info" v-if="isLoading">
       <base-spinner></base-spinner>
