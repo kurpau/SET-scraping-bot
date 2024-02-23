@@ -1,13 +1,13 @@
 <template>
   <base-card>
     <!-- TODO -->
+    <!-- clean up the stocks list file -->
+    <!-- export some code to SortControls.vue -->
     <!-- make error dialog/window -->
     <!-- make responsive for mobile -->
     <!-- export option to csv/excel? -->
     <!-- handle errors in backend -->
-    <!-- export some code to SortControls.vue -->
     <!-- commnent the code -->
-    <!-- clean up the stocks list file -->
     <div class="info" v-if="isLoading">
       <base-spinner></base-spinner>
     </div>
@@ -24,33 +24,9 @@
             <caption>
               Fetch Results ({{ displayedStocks.length }})
             </caption>
-          </div>
-          <div class="sort">
-            <div>
-              <label>Sort by:
-                <select name="select-sort" v-model="sortBy">
-                  <option value="date">Date</option>
-                  <option value="growth">Growth</option>
-                </select>
-              </label>
-            </div>
-            <base-button @click="sort('desc')" :class="{ selected: sorting === 'desc' }">
-              Descending
-            </base-button>
-            <base-button @click="sort('asc')" :class="{ selected: sorting === 'asc' }">
-              Ascending
-            </base-button>
-          </div>
-          <div class='text-input'>
-            <input name="growth-threshold" type='number' step="0.01" v-model="epsFilter" placeholder="Growth Threshold" />
-            <input name="name-filter" type='text' v-model="activeSearchTerm" placeholder="Filter by Name" />
-          </div>
-          <div>
-            <label for='positive-eps'>Only Positive EPS</label>
-            <input type="checkbox" id='positive-eps' v-model="onlyPositive">
-          </div>
-          <div>
-            <base-button @click="resetFilters">Reset</base-button>
+            <!--  need to add events -->
+            <filter-controls />
+            ha
           </div>
         </div>
         <hr>
@@ -65,7 +41,8 @@
 
 <script setup>
 import StockItem from "./StockItem.vue";
-import { ref, computed, onMounted, watch } from "vue";
+import FilterControls from "./FilterControls.vue";
+import { computed } from "vue";
 const props = defineProps({
   fetchedStocks: {
     required: true,
@@ -74,11 +51,6 @@ const props = defineProps({
   }, isLoading: { type: Boolean },
 });
 
-const sorting = useLocalStorage("sorting", "desc");
-const epsFilter = useLocalStorage("epsFilter", "");
-const activeSearchTerm = useLocalStorage("activeSearchTerm", "");
-const onlyPositive = useLocalStorage("onlyPositive", false);
-const sortBy = useLocalStorage("sortBy", "date");
 
 
 const stocks = computed(() => props.fetchedStocks && props.fetchedStocks?.length > 0 ? [...props.fetchedStocks] : JSON.parse(localStorage.getItem("stocksData") || "[]"));
@@ -124,34 +96,6 @@ const displayedStocks = computed(() => {
   return modifiedStocks;
 });
 
-function sort(mode) {
-  sorting.value = mode;
-}
-
-function useLocalStorage(key, defaultValue) {
-  const data = ref(defaultValue);
-
-  onMounted(() => {
-    const storedValue = localStorage.getItem(key);
-    if (storedValue !== null) {
-      data.value = JSON.parse(storedValue);
-    }
-  });
-
-  watch(data, (newValue) => {
-    localStorage.setItem(key, JSON.stringify(newValue));
-  });
-
-  return data;
-}
-
-function resetFilters() {
-  sorting.value = "desc";
-  epsFilter.value = "";
-  activeSearchTerm.value = "";
-  onlyPositive.value = false;
-  sortBy.value = "date";
-}
 
 </script>
 
@@ -185,12 +129,6 @@ caption {
   font-weight: 600;
   margin-top: 10px;
   white-space: nowrap;
-}
-
-.sort {
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 .text-input {
