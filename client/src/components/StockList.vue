@@ -3,23 +3,27 @@
     <!-- TODO -->
     <!-- make error dialog/window -->
     <!-- make responsive for mobile -->
-    <!-- default prop value for stocks?  -->
-    <!-- remember to handle errors in backend -->
-    <!-- check for duplicate stocks because of SET pagination.... -->
+    <!-- export option to csv/excel? -->
+    <!-- handle errors in backend -->
     <!-- commnent the code -->
     <!-- clean up the stocks list file -->
     <div class="info" v-if="isLoading">
       <base-spinner></base-spinner>
     </div>
     <div v-else>
-      <div class="results" v-if="displayedStocks">
+      <div class="info" v-if="stocks.length === 0">
+        <p>
+          Select a date range and click 'Fetch Stocks' to see the latest stock
+          information.
+        </p>
+      </div>
+      <div class="results" v-else>
         <div class='header'>
           <div>
             <caption>
               Fetch Results ({{ displayedStocks.length }})
             </caption>
           </div>
-          <div class='controls'></div>
           <div class="sort">
             <div>
               <label>Sort by:
@@ -46,14 +50,10 @@
           </div>
         </div>
         <hr>
-        <p v-if="displayedStocks.length === 0">No results found for these filters</p>
+        <div class='info' v-if="displayedStocks.length === 0">
+          <p>No stocks meet the filter criteria.</p>
+        </div>
         <stock-item v-else v-for="stock in displayedStocks" :key="stock.id" :stock="stock"></stock-item>
-      </div>
-      <div class="info" v-else>
-        <p>
-          Select a date range and click 'Fetch Stocks' to see the latest stock
-          information.
-        </p>
       </div>
     </div>
   </base-card>
@@ -62,7 +62,13 @@
 <script setup>
 import StockItem from "./StockItem.vue";
 import { ref, computed, onMounted, watch } from "vue";
-const props = defineProps(["fetchedStocks", "isLoading"]);
+const props = defineProps({
+  fetchedStocks: {
+    required: true,
+    default: () => [],
+    type: Array,
+  }, isLoading: { type: Boolean },
+});
 
 const sorting = useLocalStorage("sorting", "desc");
 const epsFilter = useLocalStorage("epsFilter", "");
@@ -71,12 +77,11 @@ const onlyPositive = useLocalStorage("onlyPositive", false);
 const sortBy = useLocalStorage("sortBy", "date");
 
 
-function sort(mode) {
-  sorting.value = mode;
-}
+const stocks = computed(() => props.fetchedStocks && props.fetchedStocks?.length > 0 ? [...props.fetchedStocks] : JSON.parse(localStorage.getItem("stocksData") || "[]"));
+
 
 const displayedStocks = computed(() => {
-  let modifiedStocks = props.fetchedStocks && props.fetchedStocks?.length > 0 ? [...props.fetchedStocks] : JSON.parse(localStorage.getItem("stocksData") || "[]");
+  let modifiedStocks = [...stocks.value];
 
   modifiedStocks = modifiedStocks.sort((i1, i2) => {
     if (sortBy.value === "growth") {
@@ -115,11 +120,12 @@ const displayedStocks = computed(() => {
   return modifiedStocks;
 });
 
-// Helper function to sync state with local storage
+function sort(mode) {
+  sorting.value = mode;
+}
 function useLocalStorage(key, defaultValue) {
   const data = ref(defaultValue);
 
-  // Load initial state from local storage or use default
   onMounted(() => {
     const storedValue = localStorage.getItem(key);
     if (storedValue !== null) {
@@ -127,15 +133,12 @@ function useLocalStorage(key, defaultValue) {
     }
   });
 
-  // Watch for changes and update local storage
   watch(data, (newValue) => {
     localStorage.setItem(key, JSON.stringify(newValue));
   });
 
   return data;
 }
-
-
 </script>
 
 <style scoped>
