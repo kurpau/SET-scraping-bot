@@ -5,6 +5,7 @@
     <!-- make responsive for mobile -->
     <!-- export option to csv/excel? -->
     <!-- handle errors in backend -->
+    <!-- export some code to SortControls.vue -->
     <!-- commnent the code -->
     <!-- clean up the stocks list file -->
     <div class="info" v-if="isLoading">
@@ -47,6 +48,9 @@
           <div>
             <label for='positive-eps'>Only Positive EPS</label>
             <input type="checkbox" id='positive-eps' v-model="onlyPositive">
+          </div>
+          <div>
+            <base-button @click="resetFilters">Reset</base-button>
           </div>
         </div>
         <hr>
@@ -123,6 +127,7 @@ const displayedStocks = computed(() => {
 function sort(mode) {
   sorting.value = mode;
 }
+
 function useLocalStorage(key, defaultValue) {
   const data = ref(defaultValue);
 
@@ -139,6 +144,15 @@ function useLocalStorage(key, defaultValue) {
 
   return data;
 }
+
+function resetFilters() {
+  sorting.value = "desc";
+  epsFilter.value = "";
+  activeSearchTerm.value = "";
+  onlyPositive.value = false;
+  sortBy.value = "date";
+}
+
 </script>
 
 <style scoped>
