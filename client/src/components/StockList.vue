@@ -2,17 +2,17 @@
   <base-card>
     <!-- TODO -->
     <!-- make error dialog/window -->
-    <!-- preserve header option state after refresh -->
     <!-- make responsive for mobile -->
     <!-- default prop value for stocks?  -->
     <!-- remember to handle errors in backend -->
     <!-- check for duplicate stocks because of SET pagination.... -->
     <!-- commnent the code -->
+    <!-- clean up the stocks list file -->
     <div class="info" v-if="isLoading">
       <base-spinner></base-spinner>
     </div>
     <div v-else>
-      <div class="results" v-if="displayedStocks.length !== 0">
+      <div class="results" v-if="displayedStocks">
         <div class='header'>
           <div>
             <caption>
@@ -46,7 +46,8 @@
           </div>
         </div>
         <hr>
-        <stock-item v-for="stock in displayedStocks" :key="stock.id" :stock="stock"></stock-item>
+        <p v-if="displayedStocks.length === 0">No results found for these filters</p>
+        <stock-item v-else v-for="stock in displayedStocks" :key="stock.id" :stock="stock"></stock-item>
       </div>
       <div class="info" v-else>
         <p>
@@ -60,14 +61,14 @@
 
 <script setup>
 import StockItem from "./StockItem.vue";
-import { ref, computed } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 const props = defineProps(["fetchedStocks", "isLoading"]);
 
-const sorting = ref("desc");
-const epsFilter = ref("");
-const activeSearchTerm = ref("");
-const onlyPositive = ref(false);
-const sortBy = ref("date");
+const sorting = useLocalStorage("sorting", "desc");
+const epsFilter = useLocalStorage("epsFilter", "");
+const activeSearchTerm = useLocalStorage("activeSearchTerm", "");
+const onlyPositive = useLocalStorage("onlyPositive", false);
+const sortBy = useLocalStorage("sortBy", "date");
 
 
 function sort(mode) {
@@ -113,6 +114,27 @@ const displayedStocks = computed(() => {
 
   return modifiedStocks;
 });
+
+// Helper function to sync state with local storage
+function useLocalStorage(key, defaultValue) {
+  const data = ref(defaultValue);
+
+  // Load initial state from local storage or use default
+  onMounted(() => {
+    const storedValue = localStorage.getItem(key);
+    if (storedValue !== null) {
+      data.value = JSON.parse(storedValue);
+    }
+  });
+
+  // Watch for changes and update local storage
+  watch(data, (newValue) => {
+    localStorage.setItem(key, JSON.stringify(newValue));
+  });
+
+  return data;
+}
+
 
 </script>
 
