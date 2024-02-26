@@ -8,6 +8,7 @@
     <!-- export option to csv/excel? -->
     <!-- handle errors in backend -->
     <!-- commnent the code -->
+    <!-- handle server timeouts or no reports -->
     <div class="info" v-if="isLoading">
       <base-spinner></base-spinner>
     </div>
@@ -20,14 +21,10 @@
       </div>
       <div class="results" v-else>
         <div class='header'>
-          <div>
-            <caption>
-              Fetch Results ({{ displayedStocks.length }})
-            </caption>
-            <!--  need to add events -->
-            <filter-controls />
-            ha
-          </div>
+          <caption>
+            Fetch Results ({{ displayedStocks.length }})
+          </caption>
+          <filter-controls @filters-changed="handleFiltersChanged" />
         </div>
         <hr>
         <div class='info' v-if="displayedStocks.length === 0">
@@ -42,7 +39,8 @@
 <script setup>
 import StockItem from "./StockItem.vue";
 import FilterControls from "./FilterControls.vue";
-import { computed } from "vue";
+import { reactive, computed } from "vue";
+
 const props = defineProps({
   fetchedStocks: {
     required: true,
@@ -51,7 +49,17 @@ const props = defineProps({
   }, isLoading: { type: Boolean },
 });
 
+const filters = reactive({
+  sorting: "desc",
+  epsFilter: "",
+  activeSearchTerm: "",
+  onlyPositive: false,
+  sortBy: "date"
+});
 
+function handleFiltersChanged(newFilters) {
+  Object.assign(filters, newFilters);
+}
 
 const stocks = computed(() => props.fetchedStocks && props.fetchedStocks?.length > 0 ? [...props.fetchedStocks] : JSON.parse(localStorage.getItem("stocksData") || "[]"));
 
@@ -60,34 +68,34 @@ const displayedStocks = computed(() => {
   let modifiedStocks = [...stocks.value];
 
   modifiedStocks = modifiedStocks.sort((i1, i2) => {
-    if (sortBy.value === "growth") {
+    if (filters.sortBy === "growth") {
       const i1Growth = i1.eps[0] - i1.eps[1];
       const i2Growth = i2.eps[0] - i2.eps[1];
-      if (sorting.value === "asc") {
+      if (filters.sorting === "asc") {
         return i1Growth - i2Growth;
-      } else if (sorting.value === "desc") {
+      } else if (filters.sorting === "desc") {
         return i2Growth - i1Growth;
       }
-    } else if (sortBy.value === "date") {
-      if (sorting.value === "asc") {
+    } else if (filters.sortBy === "date") {
+      if (filters.sorting === "asc") {
         return new Date(i1.date) - new Date(i2.date);
-      } else if (sorting.value === "desc") {
+      } else if (filters.sorting === "desc") {
         return new Date(i2.date) - new Date(i1.date);
       }
     }
   });
 
-  if (epsFilter.value !== "") {
-    modifiedStocks = modifiedStocks.filter((stock) => (stock.eps[0] - stock.eps[1]) >= epsFilter.value);
+  if (filters.epsFilter !== "") {
+    modifiedStocks = modifiedStocks.filter((stock) => (stock.eps[0] - stock.eps[1]) >= filters.epsFilter);
   }
 
-  if (activeSearchTerm.value !== "") {
+  if (filters.activeSearchTerm !== "") {
     modifiedStocks = modifiedStocks.filter((stock) =>
-      stock.name.toLowerCase().includes(activeSearchTerm.value.toLowerCase()) || stock.symbol.toLowerCase().includes(activeSearchTerm.value.toLowerCase())
+      stock.name.toLowerCase().includes(filters.activeSearchTerm.toLowerCase()) || stock.symbol.toLowerCase().includes(filters.activeSearchTerm.toLowerCase())
     );
   }
 
-  if (onlyPositive.value) {
+  if (filters.onlyPositive) {
     modifiedStocks = modifiedStocks.filter((stock) =>
       stock.eps[0] >= 0 && stock.eps[1] >= 0
     );
@@ -116,7 +124,7 @@ const displayedStocks = computed(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
 }
 
 hr {
@@ -129,31 +137,5 @@ caption {
   font-weight: 600;
   margin-top: 10px;
   white-space: nowrap;
-}
-
-.text-input {
-  display: flex;
-  gap: 10px;
-}
-
-.text-input input {
-  padding: 5px 12px;
-  font-size: 16px;
-  line-height: 20px;
-  color: var(--color-text);
-  vertical-align: middle;
-  background-color: transparent;
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  outline: none;
-}
-
-.text-input input:focus {
-  /* prevent shift on focus */
-  padding: 4px 11px;
-  outline: none;
-  border: 2px solid var(--color-accent-fg)
 }
 </style>

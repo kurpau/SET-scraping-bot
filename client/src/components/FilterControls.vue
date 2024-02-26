@@ -33,6 +33,8 @@
 <script setup>
 import { ref, onMounted, watch } from "vue";
 
+const emit = defineEmits(["filters-changed"]);
+
 const sorting = useLocalStorage("sorting", "desc");
 const epsFilter = useLocalStorage("epsFilter", "");
 const activeSearchTerm = useLocalStorage("activeSearchTerm", "");
@@ -68,15 +70,58 @@ function resetFilters() {
   onlyPositive.value = false;
   sortBy.value = "date";
 }
+
+const emitFilterChange = () => {
+  emit("filters-changed", {
+    sorting: sorting.value,
+    epsFilter: epsFilter.value,
+    activeSearchTerm: activeSearchTerm.value,
+    onlyPositive: onlyPositive.value,
+    sortBy: sortBy.value
+  });
+};
+
+watch([sorting, epsFilter, activeSearchTerm, onlyPositive, sortBy], emitFilterChange, { deep: true });
+
 </script>
 
 <style scoped>
-
+.filters {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
 
 .sort {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-</style>
 
+.text-input {
+  display: flex;
+  gap: 10px;
+}
+
+.text-input input {
+  padding: 5px 12px;
+  font-size: 16px;
+  line-height: 20px;
+  color: var(--color-text);
+  vertical-align: middle;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  outline: none;
+}
+
+.text-input input:focus {
+  /* prevent shift on focus */
+  padding: 4px 11px;
+  outline: none;
+  border: 2px solid var(--color-accent-fg)
+}
+</style>
