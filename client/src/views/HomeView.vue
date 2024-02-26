@@ -1,7 +1,7 @@
 <template>
   <project-card />
-  <header-panel @updateLoading="setLoadingState" @fetchStocks="updateStocks"></header-panel>
-  <stock-list :isLoading="isLoading" :fetchedStocks="stocks"></stock-list>
+  <header-panel @updateError="setErrorState" @updateLoading="setLoadingState" @fetchStocks="updateStocks"></header-panel>
+  <stock-list :isError="isError" :isLoading="isLoading" :fetchedStocks="stocks"></stock-list>
 </template>
 
 <script setup>
@@ -13,9 +13,14 @@ import ProjectCard from "../components/ProjectCard.vue";
 const stocks = ref();
 
 const isLoading = ref(false);
+const isError = ref(false);
 
 function setLoadingState(newState) {
   isLoading.value = newState;
+}
+
+function setErrorState(newState) {
+  isError.value = newState;
 }
 
 function updateStocks(e) {

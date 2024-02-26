@@ -44,6 +44,9 @@ function setDateRange(period) {
 }
 
 function emitDateUpdate() {
+  if (new Date(startDate.value) > new Date(endDate.value)) {
+    startDate.value = endDate.value;
+  }
   emit("update-dates", { start: startDate.value, end: endDate.value });
 }
 

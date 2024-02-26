@@ -1,8 +1,6 @@
 <template>
   <base-card>
     <!-- TODO -->
-    <!-- clean up the stocks list file -->
-    <!-- export some code to SortControls.vue -->
     <!-- make error dialog/window -->
     <!-- make responsive for mobile -->
     <!-- export option to csv/excel? -->
@@ -11,6 +9,11 @@
     <!-- handle server timeouts or no reports -->
     <div class="info" v-if="isLoading">
       <base-spinner></base-spinner>
+    </div>
+    <div v-else-if='isError'>
+      <div class='info'>
+        <p style="color: red;">Something went wrong, try fetching again!</p>
+      </div>
     </div>
     <div v-else>
       <div class="info" v-if="stocks.length === 0">
@@ -39,73 +42,76 @@
 <script setup>
 import StockItem from "./StockItem.vue";
 import FilterControls from "./FilterControls.vue";
-import { reactive, computed } from "vue";
+import { reactive, computed, defineProps } from "vue";
 
 const props = defineProps({
   fetchedStocks: {
-    required: true,
-    default: () => [],
     type: Array,
-  }, isLoading: { type: Boolean },
+    default: () => [],
+    required: true,
+  },
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
+  isError: {
+    type: Boolean,
+    default: false,
+  }
 });
 
+// Reactive state for filters
 const filters = reactive({
   sorting: "desc",
   epsFilter: "",
   activeSearchTerm: "",
   onlyPositive: false,
-  sortBy: "date"
+  sortBy: "date",
 });
 
+// Function to handle filter changes
 function handleFiltersChanged(newFilters) {
   Object.assign(filters, newFilters);
 }
 
-const stocks = computed(() => props.fetchedStocks && props.fetchedStocks?.length > 0 ? [...props.fetchedStocks] : JSON.parse(localStorage.getItem("stocksData") || "[]"));
-
-
-const displayedStocks = computed(() => {
-  let modifiedStocks = [...stocks.value];
-
-  modifiedStocks = modifiedStocks.sort((i1, i2) => {
+// Helper functions for readability and modularity
+function sortStocks(stocks) {
+  return stocks.sort((a, b) => {
     if (filters.sortBy === "growth") {
-      const i1Growth = i1.eps[0] - i1.eps[1];
-      const i2Growth = i2.eps[0] - i2.eps[1];
-      if (filters.sorting === "asc") {
-        return i1Growth - i2Growth;
-      } else if (filters.sorting === "desc") {
-        return i2Growth - i1Growth;
-      }
-    } else if (filters.sortBy === "date") {
-      if (filters.sorting === "asc") {
-        return new Date(i1.date) - new Date(i2.date);
-      } else if (filters.sorting === "desc") {
-        return new Date(i2.date) - new Date(i1.date);
-      }
+      const growthA = a.eps[0] - a.eps[1];
+      const growthB = b.eps[0] - b.eps[1];
+      return filters.sorting === "asc" ? growthA - growthB : growthB - growthA;
     }
+    // Default to sorting by date
+    const dateA = new Date(a.date), dateB = new Date(b.date);
+    return filters.sorting === "asc" ? dateA - dateB : dateB - dateA;
   });
+}
 
-  if (filters.epsFilter !== "") {
-    modifiedStocks = modifiedStocks.filter((stock) => (stock.eps[0] - stock.eps[1]) >= filters.epsFilter);
-  }
+function filterStocks(stocks) {
+  return stocks.filter(stock => {
+    const growth = stock.eps[0] - stock.eps[1];
+    const matchesEpsFilter = filters.epsFilter === "" || growth >= filters.epsFilter;
+    const matchesSearchTerm = filters.activeSearchTerm === "" || stock.name.toLowerCase().includes(filters.activeSearchTerm.toLowerCase()) || stock.symbol.toLowerCase().includes(filters.activeSearchTerm.toLowerCase());
+    const isPositive = !filters.onlyPositive || (stock.eps[0] >= 0 && stock.eps[1] >= 0);
+    return matchesEpsFilter && matchesSearchTerm && isPositive;
+  });
+}
 
-  if (filters.activeSearchTerm !== "") {
-    modifiedStocks = modifiedStocks.filter((stock) =>
-      stock.name.toLowerCase().includes(filters.activeSearchTerm.toLowerCase()) || stock.symbol.toLowerCase().includes(filters.activeSearchTerm.toLowerCase())
-    );
-  }
-
-  if (filters.onlyPositive) {
-    modifiedStocks = modifiedStocks.filter((stock) =>
-      stock.eps[0] >= 0 && stock.eps[1] >= 0
-    );
-  }
-
-  return modifiedStocks;
+// Computed property to fetch or retrieve stocks
+const stocks = computed(() => {
+  return props.fetchedStocks && props.fetchedStocks?.length > 0 ? [...props.fetchedStocks] : JSON.parse(localStorage.getItem("stocksData") || "[]");
 });
 
-
+// Displayed stocks based on filters
+const displayedStocks = computed(() => {
+  let modifiedStocks = [...stocks.value];
+  modifiedStocks = sortStocks(stocks.value);
+  modifiedStocks = filterStocks(modifiedStocks);
+  return modifiedStocks;
+});
 </script>
+
 
 <style scoped>
 .info {

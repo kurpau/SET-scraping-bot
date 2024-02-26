@@ -15,11 +15,12 @@ import DatePicker from "./DatePicker.vue";
 import { ref, watch } from "vue";
 import { useRouter } from "vue-router";
 
-const emit = defineEmits(["fetchStocks", "updateLoading"]);
+const emit = defineEmits(["fetchStocks", "updateLoading", "updateError"]);
 const isLoading = ref(false);
 const router = useRouter();
 const startDate = ref("");
 const endDate = ref("");
+const isError = ref(false);
 
 function handleDateUpdate({ start, end }) {
   startDate.value = start;
@@ -28,6 +29,7 @@ function handleDateUpdate({ start, end }) {
 }
 
 async function fetchStocks() {
+  isError.value = false;
   if (isLoading.value) {
     console.log("Request is already in progress.");
     return;
@@ -45,13 +47,19 @@ async function fetchStocks() {
   } catch (error) {
     console.error("Something went wrong!", error);
     localStorage.removeItem("stocksData");
+    isError.value = true;
   } finally {
     isLoading.value = false;
   }
 }
 
+
 watch(isLoading, (newLoadingState) => {
   emit("updateLoading", newLoadingState);
+});
+
+watch(isError, (newErrorState) => {
+  emit("updateError", newErrorState);
 });
 </script>
 
