@@ -12,4 +12,18 @@
   margin: 2rem auto;
   max-width: 40rem;
 }
+
+@media (max-width: 880px) {
+  .card {
+    margin: 1rem;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .card {
+    margin: 1rem;
+    max-width: 30rem;
+  }
+}
 </style>

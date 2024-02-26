@@ -42,7 +42,7 @@
 <script setup>
 import StockItem from "./StockItem.vue";
 import FilterControls from "./FilterControls.vue";
-import { reactive, computed, defineProps } from "vue";
+import { reactive, computed } from "vue";
 
 const props = defineProps({
   fetchedStocks: {

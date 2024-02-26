@@ -1,10 +1,9 @@
 <template>
   <base-card>
-    <div class="container">
-      <date-picker @update-dates="handleDateUpdate"></date-picker>
-      <div class='fetch'>
-        <base-button id="fetch-button" @click="fetchStocks">Fetch Stocks</base-button>
-      </div>
+    <date-picker @update-dates="handleDateUpdate"></date-picker>
+    <hr>
+    <div class='fetch'>
+      <base-button id="fetch-button" @click="fetchStocks">Fetch Stocks</base-button>
     </div>
   </base-card>
 </template>

@@ -8,25 +8,21 @@
     </div>
     <hr />
     <div class="details">
-      <div data-label="Date">{{ parsedDate }}</div>
+      <div id='report-date' data-label="Date">{{ parsedDate }}</div>
       <div class="eps">
-        <div class="period">
-          <div class="labeled">
-            <p>Current</p>
-            <span data-label="EPScurr">{{ stock.eps[0].toFixed(2) }}</span>
-          </div>
-          <div class="labeled">
-            <p>Previous</p>
-            <span data-label="EPSprev">{{ stock.eps[1].toFixed(2) }}</span>
-          </div>
+        <div class="labeled">
+          <p>Current</p>
+          <span data-label="EPScurr">{{ stock.eps[0].toFixed(2) }}</span>
         </div>
-        <div class="change">
-          <div class="labeled">
-            <p>Growth</p>
-            <div>
-              <span :class="{ 'eps-green': epsChange > 0, 'eps-red': epsChange < 0 }">{{
-                epsChange.toFixed(2) }}</span>
-            </div>
+        <div class="labeled">
+          <p>Previous</p>
+          <span data-label="EPSprev">{{ stock.eps[1].toFixed(2) }}</span>
+        </div>
+        <div class="labeled">
+          <p>Growth</p>
+          <div>
+            <span :class="{ 'eps-green': epsChange > 0, 'eps-red': epsChange < 0 }">{{
+              epsChange.toFixed(2) }}</span>
           </div>
         </div>
       </div>
@@ -68,8 +64,8 @@ const parsedDate = computed(() => {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  text-align: center;
 }
-
 
 .details {
   display: flex;
@@ -87,8 +83,11 @@ const parsedDate = computed(() => {
 
 .eps {
   display: flex;
-  flex-direction: row;
   gap: 5rem;
+}
+
+#report-date {
+  text-align: center;
 }
 
 .period {
@@ -114,5 +113,15 @@ const parsedDate = computed(() => {
 .change {
   display: flex;
   align-items: center;
+}
+
+@media (max-width: 600px) {
+
+  .header,
+  .details,
+  .eps {
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 </style>

@@ -25,6 +25,7 @@
 .container h1 {
   font-size: 50px;
   margin: 0;
+  text-align: center;
 }
 
 .container p {

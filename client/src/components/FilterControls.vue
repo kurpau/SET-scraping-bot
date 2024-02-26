@@ -124,4 +124,14 @@ watch([sorting, epsFilter, activeSearchTerm, onlyPositive, sortBy], emitFilterCh
   outline: none;
   border: 2px solid var(--color-accent-fg)
 }
+
+@media (max-width: 768px) {
+
+  .filters,
+  .sort,
+  .text-input {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
 </style>
