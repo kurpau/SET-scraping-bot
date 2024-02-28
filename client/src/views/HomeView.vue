@@ -13,7 +13,7 @@ import ProjectCard from "../components/ProjectCard.vue";
 const stocks = ref();
 
 const isLoading = ref(false);
-const isError = ref(false);
+const isError = ref({});
 
 function setLoadingState(newState) {
   isLoading.value = newState;

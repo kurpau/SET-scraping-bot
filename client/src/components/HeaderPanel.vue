@@ -20,6 +20,8 @@ const router = useRouter();
 const startDate = ref("");
 const endDate = ref("");
 const isError = ref(false);
+const errorMessage = ref("");
+
 
 function handleDateUpdate({ start, end }) {
   startDate.value = start;
@@ -29,6 +31,8 @@ function handleDateUpdate({ start, end }) {
 
 async function fetchStocks() {
   isError.value = false;
+  errorMessage.value = "";
+
   if (isLoading.value) {
     console.log("Request is already in progress.");
     return;
@@ -41,13 +45,21 @@ async function fetchStocks() {
     const res = await fetch(path);
     const data = await res.json();
 
-    emit("fetchStocks", [...data.stocks]);
-    localStorage.setItem("stocksData", JSON.stringify(data.stocks));
+    if (data.status === "error") {
+      isError.value = true;
+      errorMessage.value = data.message;
+    } else {
+      emit("fetchStocks", [...data.stocks]);
+      localStorage.setItem("stocksData", JSON.stringify(data.stocks || []));
+    }
   } catch (error) {
-    console.error("Something went wrong!", error);
-    localStorage.removeItem("stocksData");
     isError.value = true;
+    localStorage.removeItem("stocksData");
+    errorMessage.value = "Failed to fetch data. Please try again later.";
+
+    throw error;
   } finally {
+    emit("updateError", { state: isError.value, message: errorMessage });
     isLoading.value = false;
   }
 }
@@ -55,10 +67,6 @@ async function fetchStocks() {
 
 watch(isLoading, (newLoadingState) => {
   emit("updateLoading", newLoadingState);
-});
-
-watch(isError, (newErrorState) => {
-  emit("updateError", newErrorState);
 });
 </script>
 

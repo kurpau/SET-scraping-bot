@@ -1,40 +1,35 @@
 <template>
   <base-card>
     <!-- TODO -->
-    <!-- make error dialog/window -->
-    <!-- make responsive for mobile -->
     <!-- export option to csv/excel? -->
     <!-- handle errors in backend -->
     <!-- commnent the code -->
     <!-- handle server timeouts or no reports -->
-    <div class="info" v-if="isLoading">
+    <!-- on refresh api does not get current date picker value set by url -->
+    <div v-if="!fetchedStocks && !isLoading && !isError.state" class="info">
+      <p>Select a date range and click 'Fetch Stocks' to see the latest stock information.</p>
+    </div>
+    <div v-else-if="isLoading" class="info">
       <base-spinner></base-spinner>
     </div>
-    <div v-else-if='isError'>
-      <div class='info'>
-        <p style="color: red;">Something went wrong, try fetching again!</p>
-      </div>
+    <div v-else-if="isError.state" class='info'>
+      <p style="color: red;">{{ isError.message }}</p>
     </div>
-    <div v-else>
-      <div class="info" v-if="stocks.length === 0">
-        <p>
-          Select a date range and click 'Fetch Stocks' to see the latest stock
-          information.
-        </p>
+    <div v-else-if="fetchedStocks && fetchedStocks.length === 0" class="info">
+      <p>No stocks information found for the selected date range.</p>
+    </div>
+    <div class="results" v-else>
+      <div class='header'>
+        <caption>
+          Fetch Results ({{ displayedStocks.length }})
+        </caption>
+        <filter-controls @filters-changed="handleFiltersChanged" />
       </div>
-      <div class="results" v-else>
-        <div class='header'>
-          <caption>
-            Fetch Results ({{ displayedStocks.length }})
-          </caption>
-          <filter-controls @filters-changed="handleFiltersChanged" />
-        </div>
-        <hr>
-        <div class='info' v-if="displayedStocks.length === 0">
-          <p>No stocks meet the filter criteria.</p>
-        </div>
-        <stock-item v-else v-for="stock in displayedStocks" :key="stock.id" :stock="stock"></stock-item>
+      <hr>
+      <div class='info' v-if="displayedStocks.length === 0">
+        <p>No stocks meet the filter criteria.</p>
       </div>
+      <stock-item v-else v-for="stock in displayedStocks" :key="stock.id" :stock="stock"></stock-item>
     </div>
   </base-card>
 </template>
@@ -46,8 +41,6 @@ import { reactive, computed } from "vue";
 
 const props = defineProps({
   fetchedStocks: {
-    type: Array,
-    default: () => [],
     required: true,
   },
   isLoading: {
@@ -55,9 +48,19 @@ const props = defineProps({
     default: false,
   },
   isError: {
-    type: Boolean,
-    default: false,
+    type: Object,
   }
+});
+
+
+// const cachedStocks = computed(() => JSON.parse(localStorage.getItem("stocksData")));
+
+// const stocks = computed(() => {
+//   return (cachedStocks.value) ? cachedStocks.value : props.fetchedStocks;
+// });
+
+const stocks = computed(() => {
+  return props.fetchedStocks ? [...props.fetchedStocks] : [];
 });
 
 // Reactive state for filters
@@ -98,10 +101,6 @@ function filterStocks(stocks) {
   });
 }
 
-// Computed property to fetch or retrieve stocks
-const stocks = computed(() => {
-  return props.fetchedStocks && props.fetchedStocks?.length > 0 ? [...props.fetchedStocks] : JSON.parse(localStorage.getItem("stocksData") || "[]");
-});
 
 // Displayed stocks based on filters
 const displayedStocks = computed(() => {
