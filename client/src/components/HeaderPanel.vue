@@ -49,12 +49,12 @@ async function fetchStocks() {
       isError.value = true;
       errorMessage.value = data.message;
     } else {
+      localStorage.setItem("cachedStocks", JSON.stringify(data.stocks || []));
       emit("fetchStocks", [...data.stocks]);
-      localStorage.setItem("stocksData", JSON.stringify(data.stocks || []));
     }
   } catch (error) {
     isError.value = true;
-    localStorage.removeItem("stocksData");
+    localStorage.removeItem("cachedStocks");
     errorMessage.value = "Failed to fetch data. Please try again later.";
 
     throw error;

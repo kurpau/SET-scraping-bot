@@ -6,7 +6,7 @@
     <!-- commnent the code -->
     <!-- handle server timeouts or no reports -->
     <!-- on refresh api does not get current date picker value set by url -->
-    <div v-if="!fetchedStocks && !isLoading && !isError.state" class="info">
+    <div v-if="stocks === null && !isLoading && !isError.state" class="info">
       <p>Select a date range and click 'Fetch Stocks' to see the latest stock information.</p>
     </div>
     <div v-else-if="isLoading" class="info">
@@ -15,7 +15,7 @@
     <div v-else-if="isError.state" class='info'>
       <p style="color: red;">{{ isError.message }}</p>
     </div>
-    <div v-else-if="fetchedStocks && fetchedStocks.length === 0" class="info">
+    <div v-else-if="stocks && stocks.length === 0" class="info">
       <p>No stocks information found for the selected date range.</p>
     </div>
     <div class="results" v-else>
@@ -37,7 +37,7 @@
 <script setup>
 import StockItem from "./StockItem.vue";
 import FilterControls from "./FilterControls.vue";
-import { reactive, computed } from "vue";
+import { ref, computed, reactive } from "vue";
 
 const props = defineProps({
   fetchedStocks: {
@@ -52,16 +52,8 @@ const props = defineProps({
   }
 });
 
-
-// const cachedStocks = computed(() => JSON.parse(localStorage.getItem("stocksData")));
-
-// const stocks = computed(() => {
-//   return (cachedStocks.value) ? cachedStocks.value : props.fetchedStocks;
-// });
-
-const stocks = computed(() => {
-  return props.fetchedStocks ? [...props.fetchedStocks] : [];
-});
+const cachedStocks = ref(JSON.parse(localStorage.getItem("cachedStocks")) || null);
+const stocks = computed(() => !props.fetchedStocks ? cachedStocks.value : [...props.fetchedStocks]);
 
 // Reactive state for filters
 const filters = reactive({
@@ -105,7 +97,7 @@ function filterStocks(stocks) {
 // Displayed stocks based on filters
 const displayedStocks = computed(() => {
   let modifiedStocks = [...stocks.value];
-  modifiedStocks = sortStocks(stocks.value);
+  modifiedStocks = sortStocks(modifiedStocks);
   modifiedStocks = filterStocks(modifiedStocks);
   return modifiedStocks;
 });
