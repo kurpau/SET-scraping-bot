@@ -1,5 +1,6 @@
 import os
 
+
 def write_to_file(name, ticker, eps_list, url):
     file_path = os.path.join(os.getcwd(), "result.txt")
     with open(file_path, "a") as f:

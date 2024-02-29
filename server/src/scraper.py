@@ -1,14 +1,18 @@
+import concurrent.futures
+import datetime
 import logging
 import os
 import re
 import urllib.parse
+
 import requests_cache
-import datetime
-import concurrent.futures
 
 # import requests
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
+from playwright.async_api import (
+    TimeoutError as PlaywrightTimeoutError,
+)
 
 
 class Scraper:
@@ -104,9 +108,20 @@ class Scraper:
         second_last_li = li_elements.nth(-2)
         return int(second_last_li.inner_text().strip())
 
+    def stocks_exist(self):
+        try:
+            self.page.wait_for_selector('span[data-v-fbd3d43c=""]', timeout=1000)
+            return False
+        except PlaywrightTimeoutError:
+            return True
+
     def fetch_stocks(self, url):
         self.start_browser()
         self.page.goto(url)
+        if not self.stocks_exist():
+            self.close_browser()
+            return []
+
         self.get_max_pages()
 
         results = []

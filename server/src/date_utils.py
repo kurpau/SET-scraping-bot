@@ -35,4 +35,3 @@ def get_date_range():
     )
     date_range_func = date_range_switcher.get(user_choice, get_today)
     return date_range_func()
-
