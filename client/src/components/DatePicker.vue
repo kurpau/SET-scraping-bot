@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 
 const route = useRoute();
@@ -103,6 +103,11 @@ watch(
   },
   { immediate: true },
 );
+
+// Emit the update-dates event after the component mounts to ensure parent component receives the initial dates
+onMounted(() => {
+  emitDateUpdate();
+});
 </script>
 
 <style scoped>

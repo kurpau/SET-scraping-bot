@@ -56,8 +56,7 @@ async function fetchStocks() {
     isError.value = true;
     localStorage.removeItem("cachedStocks");
     errorMessage.value = "Failed to fetch data. Please try again later.";
-
-    throw error;
+    console.log(error);
   } finally {
     emit("updateError", { state: isError.value, message: errorMessage });
     isLoading.value = false;
