@@ -2,10 +2,7 @@
   <base-card>
     <!-- TODO -->
     <!-- export option to csv/excel? -->
-    <!-- handle errors in backend -->
     <!-- commnent the code -->
-    <!-- handle server timeouts or no reports -->
-    <!-- on refresh api does not get current date picker value set by url -->
     <div v-if="stocks === null && !isLoading && !isError.state" class="info">
       <p>Select a date range and click 'Fetch Stocks' to see the latest stock information.</p>
     </div>
