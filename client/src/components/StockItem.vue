@@ -31,23 +31,17 @@
 </template>
 
 <script setup>
-import { ref, computed, } from "vue";
+import { computed } from "vue";
 const props = defineProps(["stock"]);
-
-const strDate = ref(props.stock.date);
 
 const epsChange = computed(() => props.stock.eps[0] - props.stock.eps[1]);
 const parsedDate = computed(() => {
-  const date = new Date(strDate.value);
+  const parsedDate = new Date(props.stock.date);
 
-  // Extract the parts of the date
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Months are  0-indexed
-  const day = date.getDate().toString().padStart(2, "0");
-  const hour = date.getHours().toString().padStart(2, "0");
-  const minute = date.getMinutes().toString().padStart(2, "0");
+  const hour = parsedDate.getUTCHours().toString().padStart(2, "0");
+  const minute = parsedDate.getUTCMinutes().toString().padStart(2, "0");
 
-  return `${year}-${month}-${day} ${hour}:${minute}`;
+  return `${hour}:${minute}`;
 });
 </script>
 

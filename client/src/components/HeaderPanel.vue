@@ -1,5 +1,6 @@
 <template>
   <base-card>
+    <!-- date being converted to local time? from thailand??? fix plz -->
     <date-picker @update-dates="handleDateUpdate"></date-picker>
     <hr>
     <div class='fetch'>
