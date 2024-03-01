@@ -1,10 +1,10 @@
 <template>
   <div class="container">
     <div class="header">
-      <div data-label="Name">
+      <div>
         <a target=”_blank” :href="stock.url">{{ stock.name }}</a>
       </div>
-      <div data-label="Tikcer">{{ stock.symbol }}</div>
+      <div>{{ stock.symbol }}</div>
     </div>
     <hr />
     <div class="details">
@@ -64,7 +64,7 @@ const parsedDate = computed(() => {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  text-align: center;
+  align-items: center;
 }
 
 .details {

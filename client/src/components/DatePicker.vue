@@ -53,16 +53,16 @@ function emitDateUpdate() {
 function calculateStartDate(period) {
   const today = new Date();
   switch (period) {
-  case "today":
-    return today;
-  case "5D":
-    return new Date(today.setDate(today.getDate() - 5));
-  case "1M":
-    return new Date(today.setMonth(today.getMonth() - 1));
-  case "3M":
-    return new Date(today.setMonth(today.getMonth() - 3));
-  default:
-    throw new Error(`Unknown period: ${period}`);
+    case "today":
+      return today;
+    case "5D":
+      return new Date(today.setDate(today.getDate() - 5));
+    case "1M":
+      return new Date(today.setMonth(today.getMonth() - 1));
+    case "3M":
+      return new Date(today.setMonth(today.getMonth() - 3));
+    default:
+      throw new Error(`Unknown period: ${period}`);
   }
 }
 
@@ -83,7 +83,7 @@ function determineActiveRange() {
   ) {
     activeRange.value = "today";
   } else if (
-    Math.round((end - start) / (1000 * 60 * 60 * 24)) <= 5 &&
+    Math.round((end - start) / (1000 * 60 * 60 * 24)) === 5 &&
     formatDate(end) === formatDate(todayDate)
   ) {
     activeRange.value = "5D";

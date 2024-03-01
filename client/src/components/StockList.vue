@@ -1,8 +1,6 @@
 <template>
   <base-card>
-    <!-- TODO -->
-    <!-- export option to csv/excel? -->
-    <!-- commnent the code -->
+    <!-- fix long text aligning (company name in card) -->
     <div v-if="stocks === null && !isLoading && !isError.state" class="info">
       <p>Select a date range and click 'Fetch Stocks' to see the latest stock information.</p>
     </div>
