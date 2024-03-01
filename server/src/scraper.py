@@ -1,13 +1,11 @@
 import concurrent.futures
 import datetime
 import logging
-import os
 import re
 import urllib.parse
 
 import requests_cache
 
-# import requests
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 from playwright.async_api import (
@@ -20,10 +18,7 @@ class Scraper:
         self.playwright = None
         self.browser = None
         self.page = None
-        self.cache_duration = datetime.timedelta(
-            hours=1
-        )  # Duration for which the cache is valid
-        requests_cache.install_cache("stock_cache", expire_after=self.cache_duration)
+        requests_cache.install_cache("stock_cache")
 
     def start_browser(self):
         self.playwright = sync_playwright().start()
@@ -115,64 +110,75 @@ class Scraper:
         except PlaywrightTimeoutError:
             return True
 
-    def fetch_stocks(self, url):
-        self.start_browser()
-        self.page.goto(url)
-        if not self.stocks_exist():
-            self.close_browser()
-            return []
+    def scrape_report_urls(self, url):
+        try:
+            self.start_browser()
+            self.page.goto(url)
+            if not self.stocks_exist():
+                return []
 
-        self.get_max_pages()
+            self.get_max_pages()
 
-        results = []
-        seen_stock_ids = set()
-        page = 1
+            results = []
+            seen_stock_ids = set()
+            page = 1
 
-        self.set_dropdown_value(5)
-        max_pages = self.get_max_pages()
-        next_button = self.page.get_by_label("Go to next page")
-        logging.info("Fetching Stocks...")
-        while next_button:
-            self.page.wait_for_selector('text="Search Result"')
-            html = self.page.content()
-            soup = BeautifulSoup(html, "html.parser")
-            card_containers = self._get_card_containers(soup, url)
-
-            for container in card_containers:
-                actual_url, symbol, stock_id, report_date = self._extract_params(
-                    container
-                )
-                if actual_url and symbol and stock_id not in seen_stock_ids:
-                    results.append(
-                        {
-                            "url": actual_url,
-                            "symbol": symbol,
-                            "id": stock_id,
-                            "date": report_date,
-                        }
-                    )
-                    seen_stock_ids.add(stock_id)
-
-            self.print_progress(page, max_pages, "Scraping Pages")
-
+            self.set_dropdown_value(5)
+            max_pages = self.get_max_pages()
             next_button = self.page.get_by_label("Go to next page")
-            if next_button and next_button.is_disabled():
-                logging.debug(
-                    f"The 'next' button is disabled, [{page}] was the last page."
-                )
-                break
-            else:
-                next_button.click()
-                page += 1
+            logging.info("Fetching Stocks...")
+            while next_button:
+                self.page.wait_for_selector('text="Search Result"')
+                html = self.page.content()
+                soup = BeautifulSoup(html, "html.parser")
+                card_containers = self._get_card_containers(soup, url)
 
-        logging.info(f"{len(results)} Unique Stocks found!")
-        self.close_browser()
-        results = self.fetch_reports(results)
-        return results
+                for container in card_containers:
+                    try:
+                        (
+                            actual_url,
+                            symbol,
+                            stock_id,
+                            report_date,
+                        ) = self._extract_params(container)
+                        if actual_url and symbol and stock_id not in seen_stock_ids:
+                            results.append(
+                                {
+                                    "url": actual_url,
+                                    "symbol": symbol,
+                                    "id": stock_id,
+                                    "date": report_date,
+                                }
+                            )
+                            seen_stock_ids.add(stock_id)
+                    except Exception as e:
+                        logging.error(f"Error extracting stock information: {e}")
+
+                self.print_progress(page, max_pages, "Scraping Pages")
+
+                next_button = self.page.get_by_label("Go to next page")
+                if next_button and next_button.is_disabled():
+                    logging.debug(
+                        f"The 'next' button is disabled, [{page}] was the last page."
+                    )
+                    break
+                else:
+                    next_button.click()
+                    page += 1
+
+            logging.info(f"{len(results)} Unique Stocks found!")
+            return results
+        except Exception as e:
+            logging.error(f"Failed to fetch stocks: {e}")
+        finally:
+            self.close_browser()
 
     def fetch_reports(self, stocks):
+        if not stocks:
+            logging.info("No stocks to fetch reports for.")
+            return []
+
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            # Submit a future for each stock's URL and store in a dictionary
             future_to_stock = {
                 executor.submit(self.getReportText, stock["url"]): stock
                 for stock in stocks
@@ -182,21 +188,25 @@ class Scraper:
             results = []
             for future in concurrent.futures.as_completed(future_to_stock):
                 stock = future_to_stock[future]
-                completed += 1
-                data = future.result()
-                if data is not None:
-                    eps = self.getEPS(data)
-                    if eps is not None:
-                        stock_name = self.getName(data)
-                        stock["name"] = stock_name
-                        stock["eps"] = eps
-                        results.append(stock)
+                try:
+                    data = future.result()
+                    if data is not None:
+                        eps = self.getEPS(data)
+                        if eps is not None:
+                            stock_name = self.getName(data)
+                            stock["name"] = stock_name
+                            stock["eps"] = eps
+                            results.append(stock)
+                except Exception as e:
+                    logging.error(
+                        f"Failed to fetch report for {stock.get('symbol', 'Unknown')}: {e}"
+                    )
+                finally:
+                    completed += 1
+                    self.print_progress(completed, total_stocks, "Fetching Reports")
 
-                self.print_progress(completed, total_stocks, "Fetching Reports")
-
-        print()
-        logging.info("All reports fetched.")
-        return results
+            logging.info("All reports fetched.")
+            return results
 
     def print_progress(self, completed, total, message):
         """Prints the progress of a task."""
@@ -209,7 +219,7 @@ class Scraper:
 
     def getReportText(self, link):
         # Use the requests_cache session to get the page content
-        with requests_cache.CachedSession(expire_after=self.cache_duration) as session:
+        with requests_cache.CachedSession() as session:
             try:
                 # Get page HTML content
                 response = session.get(link)
@@ -217,7 +227,7 @@ class Scraper:
                 html_doc = response.content
             except Exception as e:
                 logging.error(f"Failed to fetch HTML content from {link}")
-                logging.debug(f"Exception details: {e}")
+                logging.error(f"Exception details: {e}")
                 return None
 
             try:
@@ -268,14 +278,3 @@ class Scraper:
             logging.debug("Failed to extract EPS values: RE pattern not found")
             logging.debug(f"Exception details: {e}")
             return None
-
-    def WriteToFile(self, name, ticker, eps_list, url):
-        file_path = os.path.join(self.output_dir, "result.txt")
-        with open(file_path, "a") as f:
-            f.write(f"{name} [ {ticker} ] \n")
-            f.write(f'|{"-" * 21}|\n')
-            f.write(f"| {'Current':<8} | {'Previous':<8} | \n")
-            f.write(f'|{"-" * 21}|\n')
-            f.write(f"| {eps_list[0]:>8} | {eps_list[1]:>8} | \n")
-            f.write(f'|{"-" * 21}|\n')
-            f.write(f"Link to F45 page: {url}\n\n")

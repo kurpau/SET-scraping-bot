@@ -6,7 +6,7 @@ import sys
 def setup_logging():
     log_format = "%(asctime)s - %(levelname)s - %(message)s"
     date_format = "%Y-%m-%d %H:%M:%S"
-    log_level = logging.INFO
+    log_level = logging.DEBUG
     log_filename = "application.log"
 
     # Create a logger
