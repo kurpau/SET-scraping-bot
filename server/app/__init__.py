@@ -4,9 +4,7 @@ import os
 
 
 def create_app():
-    client_dist_dir = os.path.abspath("client/dist/")
-
-    app = Flask(__name__, static_folder=client_dist_dir)
+    app = Flask(__name__)
     print(app.static_folder)
     CORS(app, resources={r"/*": {"origins": "*"}})
 
