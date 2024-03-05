@@ -2,13 +2,13 @@
   <div class="container">
     <div class="header">
       <div>
-        <a target=”_blank” :href="stock.url">{{ stock.name }}</a>
+        <a target="”_blank”" :href="stock.url">{{ stock.name }}</a>
       </div>
       <div>{{ stock.symbol }}</div>
     </div>
     <hr />
     <div class="details">
-      <div id='report-date' data-label="Date">{{ parsedDate }}</div>
+      <div id="report-date" data-label="Date">{{ parsedDate }}</div>
       <div class="eps">
         <div class="labeled">
           <p>Current</p>
@@ -21,8 +21,10 @@
         <div class="labeled">
           <p>Growth</p>
           <div>
-            <span :class="{ 'eps-green': epsChange > 0, 'eps-red': epsChange < 0 }">{{
-              epsChange.toFixed(2) }}</span>
+            <span
+              :class="{ 'eps-green': epsChange > 0, 'eps-red': epsChange < 0 }"
+              >{{ epsChange.toFixed(2) }}</span
+            >
           </div>
         </div>
       </div>
@@ -38,10 +40,13 @@ const epsChange = computed(() => props.stock.eps[0] - props.stock.eps[1]);
 const parsedDate = computed(() => {
   const parsedDate = new Date(props.stock.date);
 
+  const year = parsedDate.getUTCFullYear();
+  const month = (parsedDate.getUTCMonth() + 1).toString().padStart(2, "0"); // Months are  0-indexed
+  const day = parsedDate.getUTCDate().toString().padStart(2, "0");
   const hour = parsedDate.getUTCHours().toString().padStart(2, "0");
   const minute = parsedDate.getUTCMinutes().toString().padStart(2, "0");
 
-  return `${hour}:${minute}`;
+  return `${year}-${month}-${day} ${hour}:${minute}`;
 });
 </script>
 
@@ -110,7 +115,6 @@ const parsedDate = computed(() => {
 }
 
 @media (max-width: 600px) {
-
   .header,
   .details,
   .eps {
