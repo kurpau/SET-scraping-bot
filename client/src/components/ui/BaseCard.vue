@@ -15,14 +15,14 @@
 
 @media (max-width: 880px) {
   .card {
-    margin: 1rem;
+    margin: 1rem auto;
   }
 }
 
 /* Responsive adjustments */
-@media (max-width: 600px) {
+@media (max-width: 670px) {
   .card {
-    margin: 1rem;
+    margin: 1rem auto;
     max-width: 30rem;
   }
 }

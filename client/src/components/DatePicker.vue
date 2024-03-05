@@ -1,19 +1,49 @@
 <template>
   <div class="container">
     <div class="period-buttons">
-      <base-button @click="setDateRange('today')" :class="{ selected: activeRange === 'today' }">Today</base-button>
-      <base-button @click="setDateRange('5D')" :class="{ selected: activeRange === '5D' }">5D</base-button>
-      <base-button @click="setDateRange('1M')" :class="{ selected: activeRange === '1M' }">1M</base-button>
-      <base-button @click="setDateRange('3M')" :class="{ selected: activeRange === '3M' }">3M</base-button>
+      <base-button
+        @click="setDateRange('today')"
+        :class="{ selected: activeRange === 'today' }"
+        >Today</base-button
+      >
+      <base-button
+        @click="setDateRange('5D')"
+        :class="{ selected: activeRange === '5D' }"
+        >5D</base-button
+      >
+      <base-button
+        @click="setDateRange('1M')"
+        :class="{ selected: activeRange === '1M' }"
+        >1M</base-button
+      >
+      <base-button
+        @click="setDateRange('3M')"
+        :class="{ selected: activeRange === '3M' }"
+        >3M</base-button
+      >
     </div>
     <div class="date-picker">
       <div class="input-container">
         <label for="start" class="date-label">Start Date</label>
-        <input type="date" id="start" class="date-input" v-model="startDate" :max="today" @change="emitDateUpdate" />
+        <input
+          type="date"
+          id="start"
+          class="date-input"
+          v-model="startDate"
+          :max="today"
+          @change="emitDateUpdate"
+        />
       </div>
       <div class="input-container">
         <label for="end" class="date-label">End Date</label>
-        <input type="date" id="end" class="date-input" v-model="endDate" :max="today" @change="emitDateUpdate" />
+        <input
+          type="date"
+          id="end"
+          class="date-input"
+          v-model="endDate"
+          :max="today"
+          @change="emitDateUpdate"
+        />
       </div>
     </div>
   </div>
@@ -101,7 +131,7 @@ watch(
   () => {
     determineActiveRange();
   },
-  { immediate: true },
+  { immediate: true }
 );
 
 // Emit the update-dates event after the component mounts to ensure parent component receives the initial dates
@@ -135,7 +165,7 @@ onMounted(() => {
   flex-direction: column;
   padding: 5px;
   margin: 5px;
-  min-width: 180px;
+  min-width: 150px;
   background-color: var(--background-default);
 }
 
