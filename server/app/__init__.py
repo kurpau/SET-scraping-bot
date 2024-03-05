@@ -1,9 +1,13 @@
 from flask import Flask
 from flask_cors import CORS
+import os
 
 
 def create_app():
-    app = Flask(__name__, static_folder="dist")  # Adjust static folder path.
+    client_dist_dir = os.path.abspath("client/dist/")
+
+    app = Flask(__name__, static_folder=client_dist_dir)
+    print(app.static_folder)
     CORS(app, resources={r"/*": {"origins": "*"}})
 
     from .views import init_routes
@@ -11,3 +15,4 @@ def create_app():
     init_routes(app)
 
     return app
+
