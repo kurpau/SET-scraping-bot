@@ -5,7 +5,6 @@ import os
 
 def create_app():
     app = Flask(__name__)
-    print(app.static_folder)
     CORS(app, resources={r"/*": {"origins": "*"}})
 
     from .views import init_routes
