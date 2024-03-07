@@ -1,6 +1,5 @@
 from flask import Flask
 from flask_cors import CORS
-import os
 
 
 def create_app():
@@ -12,4 +11,3 @@ def create_app():
     init_routes(app)
 
     return app
-
