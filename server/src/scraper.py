@@ -4,20 +4,22 @@ import logging
 import re
 import urllib.parse
 
+
 import requests_cache
 
 from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, Playwright, Browser, Page
 from playwright.async_api import (
     TimeoutError as PlaywrightTimeoutError,
 )
 
 
 class Scraper:
+    playwright: Playwright
+    browser: Browser
+    page: Page
+
     def __init__(self):
-        self.playwright = None
-        self.browser = None
-        self.page = None
         requests_cache.install_cache("stock_cache")
 
     def start_browser(self):
@@ -233,7 +235,10 @@ class Scraper:
             try:
                 soup = BeautifulSoup(html_doc, "html.parser")
                 # Get report in text format
+                if soup.pre is None:
+                    raise ValueError("No <pre> tag found in HTML document.")
                 report_text = soup.pre.text
+
                 # Remove whitespace and breaks from text
                 report_text = " ".join(report_text.split())
                 return report_text
@@ -244,7 +249,10 @@ class Scraper:
 
     def getName(self, data):
         try:
-            name = re.search(r"\(F45\)(.*)\(In", data).group(1)
+            match = re.search(r"\(F45\)(.*)\(In", data)
+            if match is None:
+                raise ValueError("The F45 pattern was not found in the data.")
+            name = match.group(1)
             return name.strip()
         except AttributeError as e:
             logging.debug("Failed to extract EPS values: RE pattern not found")
@@ -254,7 +262,11 @@ class Scraper:
     def getEPS(self, data):
         try:
             # Find the line containing EPS values
-            line = re.search(r"EPS \(baht\) ([^\n]*)", data).group(1)
+            line_match = re.search(r"EPS \(baht\) ([^\n]*)", data)
+            if line_match is None:
+                raise ValueError("EPS values pattern not found in the data.")
+
+            line = line_match.group(1)
 
             # Regular expression for matching EPS values (with named groups)
             eps_pattern = r"\(?(?P<value>\d[\d.,]*)(?P<negative>\)?)"
@@ -270,11 +282,11 @@ class Scraper:
                     EPS.append(float(eps))
 
             if not EPS:
-                return None
+                raise ValueError("No EPS values extracted from the pattern.")
 
             return EPS[:2]
 
         except AttributeError as e:
-            logging.debug("Failed to extract EPS values: RE pattern not found")
+            logging.debug("Failed to extract EPS values: Unexpected data structure")
             logging.debug(f"Exception details: {e}")
             return None
