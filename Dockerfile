@@ -10,13 +10,10 @@ WORKDIR /app
 RUN git clone https://github.com/kurpau/SET-scraping-bot.git .
 
 WORKDIR /app/server
-RUN python3.10 -m venv .venv && \
-    . .venv/bin/activate && \
-    pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
-RUN . .venv/bin/activate && \
-    playwright install webkit && \
-    playwright install-deps
+RUN python -m playwright install webkit
+RUN python -m playwright install-deps
 
 WORKDIR /app/client
 RUN npm install && npm run build
@@ -25,9 +22,5 @@ RUN cp -r dist/* ../server/app/static/
 
 WORKDIR /app/server
 
-EXPOSE 8000
-
-WORKDIR /app/server
-CMD ["/bin/bash", "-c", "source .venv/bin/activate && python wsgi.py"]
-
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "wsgi:app"]
 
