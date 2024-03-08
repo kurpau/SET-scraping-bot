@@ -1,7 +1,10 @@
 from flask import jsonify, request, send_from_directory
-import logging
 from src.scraper import Scraper
 from src.stock_service import StockService
+from src.config import setup_logging
+import logging
+
+setup_logging()
 
 scraper = Scraper()
 stock_service = StockService(scraper)
