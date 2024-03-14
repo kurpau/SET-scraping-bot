@@ -1,67 +1,102 @@
 # SET-scraping-bot
 
-SET-scraping-bot is a custom scraping tool designed for extracting EPS values from SET's F45 reports.
+SET-scraping-bot is a scraping tool designed for extracting EPS values from SET's F45 reports.
 
-## Table of Contents
+## Getting Started
 
-- [Installation](#installation)
-- [Standalone Executable](#standalone-executable)
-- [Setting Up the Development Environment](#setting-up-the-development-environment)
-- [Usage](#usage)
-  - [Using the Standalone Executable](#using-the-standalone-executable)
-  - [Running from Source](#running-from-source)
-- [License](#license)
-- [Contact](#contact)
-- [Acknowledgements](#acknowledgements)
+These instructions will guide you through the setup process to get the SET-scraping-bot up and running on your local machine for development and testing purposes.
 
-## Installation
+### Prerequisites
 
-This section covers the setup process for running the bot either directly using the executable or by setting up a development environment to run the source code.
+- Docker (for Docker-based setup)
+- Python 3.8 or higher
+- Node.js (for setting up the development environment)
 
-### Standalone Executable
+### Installation
 
-To run the bot without any setup:
+#### Using Docker
 
-1. Navigate to the [Releases](https://github.com/kurpau/SET-scraping-bot/releases) page.
-2. Download the `SETbot.exe` (Currently works only on Windows)
-3. Run the file to start the bot.
+For a quick and straightforward setup, you can use Docker to run SET-scraping-bot without needing to manually install dependencies.
 
+1. Pull the Docker image:
+
+    ```sh
+    docker pull kurpau/set-bot
+    ```
+
+2. Run the Docker container:
+
+    ```sh
+    docker run -p 5000:5000 kurpau/set-bot
+    ```
+
+#### Running with Python
+
+To set up the environment manually for more control and development purposes, follow these steps:
+
+1. Install the latest version of Python from [Python.org](https://www.python.org/downloads/).
+
+2. Clone the repository:
+
+    ```sh
+    git clone https://github.com/kurpau/SET-scraping-bot.git
+    ```
+
+3. Navigate to the server directory and set up a virtual environment:
+
+    ```sh
+    cd SET-scraping-bot/server
+    python -m venv .venv
+    source .venv/bin/activate
+    ```
+
+    For Windows users, activate the virtual environment using:
+
+    ```cmd
+    .venv\Scripts\activate
+    ```
+
+4. Install the required Python packages:
+
+    ```sh
+    pip install -r requirements.txt
+    ```
+
+5. Install Playwright and its dependencies:
+
+    ```sh
+    playwright install webkit
+    playwright install-deps
+    ```
+
+6. Start the server:
+
+    ```sh
+    python wsgi.py
+     ```
+
+ After starting the server, the application can be accessed via [http://localhost:5000](http://localhost:5000) in your web browser.
+  
 ### Setting Up the Development Environment
 
-If you need to run the bot from the source code or wish to modify the code, follow these steps:
+For developers planning to contribute or modify the tool, setting up the full development environment is recommended.
 
-- Install the latest version of Python from [Python.org](https://www.python.org/downloads/).
-- Clone the repository:
+1. Follow the steps above to set up the server environment.
 
-  ```sh
-  git clone https://github.com/kurpau/SET-scraping-bot.git
-  ```
+2. Navigate to the client directory:
 
-- Navigate to the directory and install dependencies:
+    ```sh
+    cd SET-scraping-bot/server
+    ```
 
-  ```sh
-  cd SET-scraping-bot
-  pip install -r requirements.txt
-  playwrigth install
-  ```
+3. Install Node.js dependencies:
 
-## Usage
+    ```sh
+    npm install
+    ```
 
-### Using the Standalone Executable
+4. Start the development server:
 
-Run `SET-scraping-bot.exe` to start the bot. If command-line arguments are necessary, execute the following in the command prompt or terminal:
-
-```sh
-./SET-scraping-bot.exe [arguments]
-```
-
-### Running from Source
-
-To execute the bot from the Python script:
-
-1. Open a terminal or command prompt in the project directory.
-2. Run the script with:
-
-   ```sh
-   python src/main.py
-   ```
+    ```sh
+    npm run dev
+    ```
