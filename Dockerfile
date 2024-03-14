@@ -23,4 +23,3 @@ RUN cp -r dist/* ../server/app/static/
 WORKDIR /app/server
 
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "wsgi:app"]
-
