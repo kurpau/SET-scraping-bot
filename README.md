@@ -29,6 +29,11 @@ For a quick and straightforward setup, you can use Docker to run SET-scraping-bo
     ```sh
     docker run -p 5000:5000 kurpau/set-bot
     ```
+3. Access it on:
+
+    ```sh
+    http://localhost:5000/
+    ```
 
 #### Running with Python
 
@@ -77,11 +82,9 @@ To set up the environment manually for more control and development purposes, fo
 
  After starting the server, the application can be accessed via [http://localhost:5000](http://localhost:5000) in your web browser.
   
-### Setting Up the Development Environment
+### Setting Up the Development Environment for the frontend
 
-For developers planning to contribute or modify the tool, setting up the full development environment is recommended.
-
-1. Follow the steps above to set up the server environment.
+1. Follow the steps above to set up the server environment and have node installed on your system.
 
 2. Navigate to the client directory:
 
