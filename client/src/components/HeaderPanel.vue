@@ -1,10 +1,11 @@
 <template>
   <base-card>
-    <!-- date being converted to local time? from thailand??? fix plz -->
     <date-picker @update-dates="handleDateUpdate"></date-picker>
-    <hr>
-    <div class='fetch'>
-      <base-button id="fetch-button" @click="fetchStocks">Fetch Stocks</base-button>
+    <hr />
+    <div class="fetch">
+      <base-button id="fetch-button" @click="fetchStocks"
+        >Fetch Stocks</base-button
+      >
     </div>
   </base-card>
 </template>
@@ -22,7 +23,6 @@ const startDate = ref("");
 const endDate = ref("");
 const isError = ref(false);
 const errorMessage = ref("");
-
 
 function handleDateUpdate({ start, end }) {
   startDate.value = start;
@@ -63,7 +63,6 @@ async function fetchStocks() {
     isLoading.value = false;
   }
 }
-
 
 watch(isLoading, (newLoadingState) => {
   emit("updateLoading", newLoadingState);
