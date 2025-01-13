@@ -103,3 +103,9 @@ To set up the environment manually for more control and development purposes, fo
     ```sh
     npm run dev
     ```
+
+## PyInstaller Build Command
+
+```sh
+pyinstaller --onefile --add-data "app/static;app/static" wsgi.py
+```
